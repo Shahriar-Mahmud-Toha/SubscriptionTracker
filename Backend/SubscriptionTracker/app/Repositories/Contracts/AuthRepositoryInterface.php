@@ -19,4 +19,5 @@ interface AuthRepositoryInterface
     public function getTokenDataByAuthId(int $authId): EloquentCollection|null;
     public function updateApiSession(ApiSession $apiSessionData, array $updatedData): bool;
     public function deleteApiSession(ApiSession $apiSession): bool;
+    public function getUsersStatistics();
 }

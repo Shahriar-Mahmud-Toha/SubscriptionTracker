@@ -9,6 +9,7 @@ use App\Services\Interfaces\SubscriptionServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionService implements SubscriptionServiceInterface
 {
@@ -21,50 +22,81 @@ class SubscriptionService implements SubscriptionServiceInterface
 
     public function getAllUsersSubscriptions(): Collection
     {
-        return $this->subscriptionRepository->getAllUsersSubscriptions();
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () {
+            return $this->subscriptionRepository->getAllUsersSubscriptions();
+        });
     }
     public function showUsersAllSubscriptions(int $authId): EloquentCollection|null
     {
-        return $this->subscriptionRepository->showUsersAllSubscriptions($authId);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () use ($authId) {
+            return $this->subscriptionRepository->showUsersAllSubscriptions($authId);
+        });
     }
     public function getUsersSubscriptionById(int $subsId, int $authId): Subscription|null
     {
-        return $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authId);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () use ($subsId, $authId) {
+            return $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authId);
+        });
     }
     public function getSubscriptionById(int $subsId): Subscription|null
     {
-        return $this->subscriptionRepository->getSubscriptionById($subsId);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () use ($subsId) {
+            return $this->subscriptionRepository->getSubscriptionById($subsId);
+        });
     }
     public function storeSubscription(SubscriptionDTO $subsData, int $authId): Subscription|null
     {
-        return $this->subscriptionRepository->storeSubscription(array_merge($subsData->toArray(), ['auth_id' => $authId]));
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        return DB::transaction(function () use ($subsData, $authId) {
+            return $this->subscriptionRepository->storeSubscription(array_merge($subsData->toArray(), ['auth_id' => $authId]));
+        });
     }
     public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, int $authId): bool
     {
-        $currSubsData = $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authId);
-        if (!$currSubsData) {
-            return false; // Subscription not found for this user
-        }
-        if (!$newSubsData->name) {
-            $newSubsData->name = $currSubsData->name;
-        }
-        if (!$newSubsData->date_of_expiration) {
-            $newSubsData->date_of_expiration = Carbon::parse($currSubsData->date_of_expiration);
-        }
-        return $this->subscriptionRepository->updateSubscription($currSubsData, $newSubsData->toArrayWithNull());
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        return DB::transaction(function () use ($newSubsData, $subsId, $authId) {
+            $currSubsData = $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authId);
+            if (!$currSubsData) {
+                return false; // Subscription not found for this user
+            }
+            if (!$newSubsData->name) {
+                $newSubsData->name = $currSubsData->name;
+            }
+            if (!$newSubsData->date_of_expiration) {
+                $newSubsData->date_of_expiration = Carbon::parse($currSubsData->date_of_expiration);
+            }
+            return $this->subscriptionRepository->updateSubscription($currSubsData, $newSubsData->toArrayWithNull());
+        });
     }
 
     public function deleteSubscription(int $subsId): bool
     {
-        $currSubsData = $this->subscriptionRepository->getSubscriptionById($subsId);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+        return DB::transaction(function () use ($subsId) {
+            $currSubsData = $this->subscriptionRepository->getSubscriptionById($subsId);
 
-        if (!$currSubsData) {
-            return false; // Subscription not found for this user
-        }
-        return $this->subscriptionRepository->deleteSubscription($currSubsData);
+            if (!$currSubsData) {
+                return false; // Subscription not found for this user
+            }
+            return $this->subscriptionRepository->deleteSubscription($currSubsData);
+        });
     }
     public function deleteUsersSubscription(int $subsId, int $authId): bool
     {
-        return $this->subscriptionRepository->deleteUsersSubscription($subsId, $authId);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+        return DB::transaction(function () use ($subsId, $authId) {
+            return $this->subscriptionRepository->deleteUsersSubscription($subsId, $authId);
+        });
+    }
+    public function searchSubscriptions(string $keyword, int $authId): Collection
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () use ($keyword, $authId) {
+            return $this->subscriptionRepository->searchSubscriptions($keyword, $authId);
+        });
     }
 }

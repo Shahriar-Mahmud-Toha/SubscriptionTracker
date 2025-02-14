@@ -7,6 +7,7 @@ use App\Models\Authentication;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -28,13 +29,15 @@ class AuthService implements AuthServiceInterface
 
     public function signup(AuthenticationDTO $authData)
     {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         return DB::transaction(function () use ($authData) {
             return $this->authRepository->signup($authData->toArray());
-        }, 'SERIALIZABLE');
+        });
     }
 
-    public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int
+    public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null
     {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($authData, $sessionData) {
             $verifiedUser = $this->authRepository->findAuthDataByEmail($authData->email);
             if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || !$verifiedUser->verified) {
@@ -66,10 +69,11 @@ class AuthService implements AuthServiceInterface
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
             ];
-        }, 'SERIALIZABLE') ?? -2;
+        });
     }
-    public function refreshToken(string $refreshToken, Authentication $authData, array $sessionData): array|int
+    public function refreshToken(string $refreshToken, Authentication $authData, array $sessionData): array|int|null
     {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($refreshToken, $authData, $sessionData) {
             $apiTokenCollection = $this->authRepository->getTokenDataByAuthId($authData->id);
             $apiToken = null;
@@ -90,7 +94,7 @@ class AuthService implements AuthServiceInterface
             // JWTAuth::setToken($decryptedAccessToken);
             // JWTAuth::invalidate($decryptedAccessToken);
             $invRefreshRes = $this->invalidateToken($decryptedRefreshToken);
-            
+
             if (!$invRefreshRes['result']) {
                 return -2; //invalidation failed
             }
@@ -109,7 +113,7 @@ class AuthService implements AuthServiceInterface
                 'device_name' => $sessionData['device_name'],
                 'expires_at' => $refreshTokenExpireTime
             ];
-            
+
             $result = $this->authRepository->updateApiSession($apiToken, $updatedData);
             if (!$result) {
                 Redis::del([$invRefreshRes['redisEntry']]);
@@ -120,10 +124,11 @@ class AuthService implements AuthServiceInterface
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
             ];
-        }, 'SERIALIZABLE') ?? -3;
+        });
     }
     public function logout(string $token, Authentication $authData): int
     {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($token, $authData) {
             $apiTokenCollection = $this->authRepository->getTokenDataByAuthId($authData->id);
             $apiToken = null;
@@ -155,7 +160,7 @@ class AuthService implements AuthServiceInterface
                 DB::rollBack();
                 return -2; ////invalidation failed
             }
-        }, 'SERIALIZABLE') ?? -2;
+        });
     }
     public function invalidateToken(string $token): array | null
     {
@@ -183,6 +188,13 @@ class AuthService implements AuthServiceInterface
 
     public function findAuthUserDetailsById(int $auth_id)
     {
-        return $this->authRepository->findAuthUserDetailsById($auth_id);
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () use ($auth_id) {
+            return $this->authRepository->findAuthUserDetailsById($auth_id);
+        });
+    }
+    public function getUsersStatistics()
+    {
+        return $this->authRepository->getUsersStatistics();
     }
 }

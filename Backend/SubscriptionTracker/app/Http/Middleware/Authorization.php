@@ -17,15 +17,18 @@ class Authorization
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $role = JWTAuth::parseToken()->getClaim('role');
+        try {
+            $role = JWTAuth::parseToken()->getClaim('role');
 
-        // Check if the user has any of the roles specified in the route
-        if (!in_array($role, $roles)) {
-            return response()->json([
-                'message' => 'You do not have permission to access this resource.',
-            ], 403);
+            // Check if the user has any of the roles specified in the route
+            if (!in_array($role, $roles)) {
+                return response()->json([
+                    'message' => 'You do not have permission to access this resource.',
+                ], 403);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
-
         return $next($request);
     }
 }

@@ -17,4 +17,5 @@ interface SubscriptionServiceInterface
     public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, int $authId): bool;
     public function deleteSubscription(int $subsId): bool;
     public function deleteUsersSubscription(int $subsId, int $authId): bool;
+    public function searchSubscriptions(string $keyword, int $authId): Collection;
 }

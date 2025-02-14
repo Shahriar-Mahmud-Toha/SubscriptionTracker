@@ -52,4 +52,13 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return $apiSession->delete();
     }
+    public function getUsersStatistics() //No need transactions
+    {
+        return Authentication::where('role', '!=', 'admin')
+            ->selectRaw('
+            COUNT(*) as total_users,
+            SUM(CASE WHEN verified = 1 THEN 1 ELSE 0 END) as active_users,
+            SUM(CASE WHEN verified = 0 THEN 1 ELSE 0 END) as inactive_users
+        ')->first();
+    }
 }

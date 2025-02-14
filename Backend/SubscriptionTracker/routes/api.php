@@ -12,7 +12,8 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'authentication'], function () {
     Route::group(['middleware' => 'authorization:admin'], function () {
-        Route::get('subscription', [SubscriptionController::class, 'index']);
+        Route::get('subscription/countAll', [AuthController::class, 'getAllCount']);
+        Route::get('subscription', [SubscriptionController::class, 'index']); //dev mode
     });
     Route::group(['middleware' => 'authorization:user'], function () {
         Route::get('subscription/showAll', [SubscriptionController::class, 'showAllSubscriptionForThisUser']);
@@ -20,6 +21,7 @@ Route::group(['middleware' => 'authentication'], function () {
         Route::post('subscription/store', [SubscriptionController::class, 'create']);
         Route::patch('subscription/update/{id}', [SubscriptionController::class, 'update']);
         Route::delete('subscription/delete/{id}', [SubscriptionController::class, 'destroy']);
+        Route::get('subscription/search', [SubscriptionController::class, 'search']);
     });
     Route::get('me', [AuthController::class, 'me']); //dev mode
     Route::get('profile', [AuthController::class, 'viewProfile']);

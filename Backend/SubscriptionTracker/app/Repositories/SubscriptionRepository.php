@@ -45,4 +45,22 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
     {
         return Subscription::all();
     }
+    public function searchSubscriptions(string $keyword, int $authId): Collection
+    {
+        return Subscription::where('auth_id', $authId)
+            ->where(function ($query) use ($keyword) {
+                $query->where('id', 'LIKE', "%{$keyword}%")
+                    ->orWhere('name', 'LIKE', "%{$keyword}%")
+                    ->orWhere('seller_info', 'LIKE', "%{$keyword}%")
+                    ->orWhere('date_of_purchase', 'LIKE', "%{$keyword}%")
+                    ->orWhere('reminder_time', 'LIKE', "%{$keyword}%")
+                    ->orWhere('date_of_expiration', 'LIKE', "%{$keyword}%")
+                    ->orWhere('duration', 'LIKE', "%{$keyword}%")
+                    ->orWhere('account_info', 'LIKE', "%{$keyword}%")
+                    ->orWhere('price', 'LIKE', "%{$keyword}%")
+                    ->orWhere('currency', 'LIKE', "%{$keyword}%")
+                    ->orWhere('comment', 'LIKE', "%{$keyword}%");
+            })
+            ->get();
+    }
 }
