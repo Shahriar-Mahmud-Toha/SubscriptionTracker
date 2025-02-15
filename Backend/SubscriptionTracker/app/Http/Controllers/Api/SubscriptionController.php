@@ -39,6 +39,11 @@ class SubscriptionController extends Controller
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
+
+            if ($request->hasFile('file')) {
+                $data->file_name = basename($request->file('file')->store('subscriptions'));
+            }
+            
             return response()->json($this->subscriptionService->storeSubscription($data, Auth::user()->id), 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
@@ -96,9 +101,28 @@ class SubscriptionController extends Controller
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
-
             if ($this->subscriptionService->updateSubscription($data, $id, Auth::user()->id)) {
                 return response()->json(['message' => 'Subscription data Updated successfully'], 200);
+            }
+            return response()->json(['message' => 'Subscription data NOT Updated'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function updateFile(Request $request, int $id): JsonResponse
+    {
+        try {
+            $data = $this->subscriptionValidationService->validateSubscriptionFileUpdate($request);
+
+            if (is_array($data) && !$data['success']) {
+                return response()->json($data['errors'], 400);
+            }
+            $fileName = null;
+            if ($request->hasFile('file')) {
+                $fileName = basename($request->file('file')->store('subscriptions'));
+            }
+            if ($this->subscriptionService->updateSubscriptionsFile($id, Auth::user()->id, $fileName)) {
+                return response()->json(['message' => 'This Subscription\'s file updated successfully'], 200);
             }
             return response()->json(['message' => 'Subscription data NOT Updated'], 500);
         } catch (\Exception $e) {

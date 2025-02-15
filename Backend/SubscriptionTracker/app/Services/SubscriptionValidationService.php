@@ -13,7 +13,7 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
     public function validateSubscriptionStore(Request $request)
     {
         $validator = Validator::make(
-            $request->only(['name', 'seller_info', 'date_of_purchase', 'reminder_time', 'date_of_expiration', 'account_info', 'price', 'currency', 'comment']),
+            $request->only(['name', 'seller_info', 'date_of_purchase', 'reminder_time', 'date_of_expiration', 'account_info', 'price', 'currency', 'comment', 'file']),
             [
                 'name' => ['required', 'string', 'max:255'],
                 'seller_info' => ['nullable', 'string', 'max:255'],
@@ -23,7 +23,15 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
                 'account_info' => ['nullable', 'string', 'max:255'],
                 'price' => ['nullable', 'numeric', 'between:0,99999999999999.99'],
                 'currency' => ['nullable', 'string', 'size:3'],
-                'comment' => ['nullable', 'string', 'max:255']
+                'comment' => ['nullable', 'string', 'max:255'],
+                'file' => [
+                    'nullable',
+                    // 'mimes:pdf,txt,doc,docx,xls,xlsx,png,jpg,webp,heic',
+                    'max:5120',
+                    function ($attribute, $value, $fail) {
+                        $this->fileTypeValidator($attribute, $value, $fail);
+                    }
+                ],
             ],
             [
                 'name.required' => 'The name field is required.',
@@ -51,6 +59,8 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
 
                 'comment.string' => 'The comment must be a string.',
                 'comment.max' => 'The comment cannot be longer than 255 characters.',
+
+                'file.max' => 'The file size must not exceed 5mb.'
             ]
         );
 
@@ -102,7 +112,7 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
                 'account_info' => ['nullable', 'string', 'max:255'],
                 'price' => ['nullable', 'numeric', 'between:0,99999999999999.99'],
                 'currency' => ['nullable', 'string', 'size:3'],
-                'comment' => ['nullable', 'string', 'max:255']
+                'comment' => ['nullable', 'string', 'max:255'],
             ],
             [
                 'name.string' => 'The name must be a string.',
@@ -169,5 +179,57 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
         }
 
         return $subscriptionDTO;
+    }
+    public function validateSubscriptionFileUpdate(Request $request)
+    {
+        $validator = Validator::make(
+            $request->only(['file']),
+            [
+                'file' => [
+                    'nullable',
+                    'max:5120',
+                    function ($attribute, $value, $fail) {
+                        $this->fileTypeValidator($attribute, $value, $fail);
+                    }
+                ],
+            ],
+            [
+                'file.max' => 'The file size must not exceed 5mb.'
+            ]
+        );
+
+        if ($validator->fails()) {
+            return [
+                'success' => false,
+                'errors' => $validator->messages(),
+            ];
+        }
+        return true;
+    }
+    public function fileTypeValidator($attribute, $value, $fail)
+    {
+        $allowedExtensions = [
+            'pdf' => 'application/pdf',
+            'txt' => 'text/plain',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'heic' => 'image/heic',
+        ];
+
+        $extension = strtolower($value->getClientOriginalExtension());
+        $mimeType = $value->getMimeType();
+        if (!array_key_exists($extension, $allowedExtensions)) {
+            return $fail("Invalid file type. Allowed types: pdf, txt, doc, docx, xls, xlsx, png, jpg, webp, heic.");
+        }
+
+        if ($allowedExtensions[$extension] !== $mimeType) {
+            return $fail("The file extension does not match the actual file type.");
+        }
     }
 }

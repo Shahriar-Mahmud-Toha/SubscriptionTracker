@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SubscriptionService implements SubscriptionServiceInterface
 {
@@ -70,6 +71,26 @@ class SubscriptionService implements SubscriptionServiceInterface
                 $newSubsData->date_of_expiration = Carbon::parse($currSubsData->date_of_expiration);
             }
             return $this->subscriptionRepository->updateSubscription($currSubsData, $newSubsData->toArrayWithNull());
+        });
+    }
+    public function updateSubscriptionsFile(int $subsId, int $authId, string $fileName=null): bool
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        return DB::transaction(function () use ($subsId, $authId, $fileName) {
+            $currSubsData = $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authId);
+            if (!$currSubsData) {
+                return false; // Subscription not found for this user
+            }
+            if (Storage::disk('local')->exists("subscriptions/{$currSubsData->file_name}")) {
+                Storage::disk('local')->delete("subscriptions/{$currSubsData->file_name}");
+            }
+            if($fileName){
+                $currSubsData->file_name = $fileName;
+            }
+            else{
+                $currSubsData->file_name = null;
+            }
+            return $this->subscriptionRepository->updateSubscription($currSubsData, $currSubsData->toArray());
         });
     }
 

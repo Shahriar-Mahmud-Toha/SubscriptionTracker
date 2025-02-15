@@ -20,6 +20,7 @@ Route::group(['middleware' => 'authentication'], function () {
         Route::get('subscription/show/{id}', [SubscriptionController::class, 'show']);
         Route::post('subscription/store', [SubscriptionController::class, 'create']);
         Route::patch('subscription/update/{id}', [SubscriptionController::class, 'update']);
+        Route::post('subscription/updateFile/{id}', [SubscriptionController::class, 'updateFile']);
         Route::delete('subscription/delete/{id}', [SubscriptionController::class, 'destroy']);
         Route::get('subscription/search', [SubscriptionController::class, 'search']);
     });

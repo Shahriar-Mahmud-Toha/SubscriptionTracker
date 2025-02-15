@@ -8,4 +8,5 @@ interface SubscriptionValidationServiceInterface
 {
     public function validateSubscriptionStore(Request $request);
     public function validateSubscriptionUpdate(Request $request);
+    public function validateSubscriptionFileUpdate(Request $request);
 }
