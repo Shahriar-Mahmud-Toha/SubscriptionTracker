@@ -8,6 +8,7 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -31,7 +32,9 @@ class AuthService implements AuthServiceInterface
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         return DB::transaction(function () use ($authData) {
-            return $this->authRepository->signup($authData->toArray());
+            $data = $this->authRepository->signup($authData->toArray());
+            event(new Registered($data));
+            return $data;
         });
     }
 
@@ -40,7 +43,7 @@ class AuthService implements AuthServiceInterface
         DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($authData, $sessionData) {
             $verifiedUser = $this->authRepository->findAuthDataByEmail($authData->email);
-            if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || !$verifiedUser->verified) {
+            if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || $verifiedUser->email_verified_at==null) {
                 return -1; // Invalid credentials
             }
             $accessToken = JWTAuth::customClaims(['role' => $verifiedUser->role, 'type' => 'access', 'exp' => Carbon::now()->addMinutes($this->accessTokenValidity)->timestamp])

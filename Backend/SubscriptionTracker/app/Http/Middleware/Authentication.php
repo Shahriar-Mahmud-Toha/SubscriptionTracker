@@ -20,7 +20,7 @@ class Authentication
             $this->checkBannedToken($data['payload']);
             $this->validateRefreshToken($request, $data['payload']);
             $user = JWTAuth::authenticate();
-            if (!$user->verified) {
+            if (!$user->email_verified_at) {
                 throw new \Exception('Account is inactive. Access denied.', 403);
             }
             Auth::setUser($user); // Setting the authenticated user in the request context

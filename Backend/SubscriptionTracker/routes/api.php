@@ -6,8 +6,11 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('user/signup', [AuthController::class, 'signupUser']);
-Route::post('admin/signup', [AuthController::class, 'signupAdmin']);
+Route::get('user/signup/verifyEmail/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['signed', 'throttle:2,1'])->name('verification.verify');
+Route::get('user/signup/reverifyEmail/{id}', [AuthController::class, 'reVerifyEmail'])->middleware(['throttle:2,1'])->name('verification.send'); //throttle:2,1 => max 2 request in 1 min.
+
 Route::post('login', [AuthController::class, 'login']);
+Route::post('admin/signup', [AuthController::class, 'signupAdmin']);
 // Route::get('me', [AuthController::class, 'me'])->middleware(['auth:api', 'authorization:admin,user']);
 
 Route::group(['middleware' => 'authentication'], function () {
@@ -28,7 +31,7 @@ Route::group(['middleware' => 'authentication'], function () {
     Route::get('profile', [AuthController::class, 'viewProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh_token', [AuthController::class, 'refresh']);
-    
+
     Route::post('create', [UserController::class, 'create']);
     Route::patch('update', [UserController::class, 'update']);
 });

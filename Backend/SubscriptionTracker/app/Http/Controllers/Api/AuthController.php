@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\DTO\AuthenticationDTO;
-use App\DTO\UserDTO;
 use App\Http\Controllers\Controller;
 use App\Services\Interfaces\AuthServiceInterface;
 use App\Services\Interfaces\UserValidationServiceInterface;
@@ -33,7 +32,47 @@ class AuthController extends Controller
                 return response()->json($data['errors'], 400);
             }
             $data->role = 'user';
-            return response()->json(['authData' => $this->authService->signup($data), 'message' => 'Account Created Successfully'], 201);
+            $result = $this->authService->signup($data);
+            if (!$result) {
+                return response()->json(['message' => 'Account Creation Failed'], 500);
+            }
+            return response()->json(['id' => $result->id, 'message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function verifyEmail(int $id, string $hash): JsonResponse
+    {
+        try {
+            $user = $this->authService->findAuthUserDetailsById($id);
+            if (!$user) {
+                return response()->json(['message' => 'No Valid user found.'], 400);
+            }
+            if ($user->email_verified_at) {
+                return response()->json(['message' => 'Email already verified. You can login!'], 200);
+            }
+            if (!hash_equals(sha1($user->email), $hash)) {
+                return response()->json(['message' => 'Invalid verification link'], 403);
+            }
+            $user->markEmailAsVerified();
+
+            return response()->json(['message' => 'Email successfully verified and account Created Successfully'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function reVerifyEmail(int $id): JsonResponse
+    {
+        try {
+            $user = $this->authService->findAuthUserDetailsById($id);
+            if (!$user) {
+                return response()->json(['message' => 'No Valid user found.'], 400);
+            }
+            if ($user->email_verified_at) {
+                return response()->json(['message' => 'Email already verified. You can login!'], 200);
+            }
+            $user->sendEmailVerificationNotification();
+            return response()->json(['message' => 'Verification link sent!'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -47,7 +86,11 @@ class AuthController extends Controller
                 return response()->json($data['errors'], 400);
             }
             $data->role = 'admin';
-            return response()->json(['authData' => $this->authService->signup($data), 'message' => 'Account Created Successfully'], 201);
+            $result = $this->authService->signup($data);
+            if (!$result) {
+                return response()->json(['message' => 'Account Creation Failed'], 500);
+            }
+            return response()->json(['message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }

@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Authentication extends Authenticatable implements JWTSubject
+class Authentication extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'authentications';
-    protected $fillable = ['role', 'email', 'password', 'verified'];
+    protected $fillable = ['role', 'email', 'password', 'email_verified_at'];
     protected $hidden = ['password'];
 
     public function setPasswordAttribute($value)

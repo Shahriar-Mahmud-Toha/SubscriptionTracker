@@ -2,12 +2,14 @@
 
 namespace App\DTO;
 
+use Carbon\Carbon;
+
 class AuthenticationDTO
 {
     public ?string $role = null;
     public ?string $email = null;
     public ?string $password = null;
-    public bool $verified = false;
+    public ?Carbon $email_verified_at = null;
 
     public function toArray(): array
     {
@@ -15,7 +17,7 @@ class AuthenticationDTO
             'role' => $this->role,
             'email' => $this->email,
             'password' => $this->password,
-            'verified' => $this->verified,
+            'email_verified_at' => $this->email_verified_at?->toDateTimeString(),
         ], function ($value) {
             return $value !== null;
         });
@@ -26,7 +28,7 @@ class AuthenticationDTO
             'role' => $this->role,
             'email' => $this->email,
             'password' => $this->password,
-            'verified' => $this->verified,
+            'verified' => $this->email_verified_at?->toDateTimeString(),
         ];
     }
 }

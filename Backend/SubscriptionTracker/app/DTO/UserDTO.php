@@ -28,7 +28,7 @@ class UserDTO
             'auth_id' => $this->auth_id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'dob' => $this->dob,
+            'dob' => $this->dob?->toDateTimeString(),
         ];
     }
 }

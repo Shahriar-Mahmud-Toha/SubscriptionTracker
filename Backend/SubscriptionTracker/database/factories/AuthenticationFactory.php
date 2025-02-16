@@ -23,7 +23,7 @@ class AuthenticationFactory extends Factory
             'role' => $this->faker->randomElement(['admin', 'user']),
             'email' => $this->faker->unique()->safeEmail,
             'password' => Hash::make('123'),
-            'verified' => $this->faker->boolean(),
+            'email_verified_at' => $this->faker->optional(0.7)->dateTimeBetween(now(), now()->addMinutes(10)),
         ];
     }
 }
