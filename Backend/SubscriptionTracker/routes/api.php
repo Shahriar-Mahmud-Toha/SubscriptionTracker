@@ -34,4 +34,6 @@ Route::group(['middleware' => 'authentication'], function () {
 
     Route::post('create', [UserController::class, 'create']);
     Route::patch('update', [UserController::class, 'update']);
+    Route::patch('update/email', [AuthController::class, 'updateEmail']);
+    Route::patch('update/password', [AuthController::class, 'updatePassword']);
 });

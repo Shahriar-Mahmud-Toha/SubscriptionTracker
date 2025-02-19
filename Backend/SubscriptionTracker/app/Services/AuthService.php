@@ -43,7 +43,7 @@ class AuthService implements AuthServiceInterface
         DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($authData, $sessionData) {
             $verifiedUser = $this->authRepository->findAuthDataByEmail($authData->email);
-            if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || $verifiedUser->email_verified_at==null) {
+            if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || $verifiedUser->email_verified_at == null) {
                 return -1; // Invalid credentials
             }
             $accessToken = JWTAuth::customClaims(['role' => $verifiedUser->role, 'type' => 'access', 'exp' => Carbon::now()->addMinutes($this->accessTokenValidity)->timestamp])
@@ -196,6 +196,56 @@ class AuthService implements AuthServiceInterface
             return $this->authRepository->findAuthUserDetailsById($auth_id);
         });
     }
+
+    public function updateEmail(int $authId, string $email): bool
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+        return DB::transaction(function () use ($authId, $email) {
+            $currData = $this->authRepository->findAuthDataById($authId);
+            if (!$currData) {
+                return false; // Auth data not found for this user
+            }
+
+            $updatedData = [
+                'email' => $email,
+                'email_verified_at' => null
+            ];
+
+            if (!$this->authRepository->updateAuthDataById($currData, $updatedData)) {
+                return false; 
+            }
+
+            $currData->email = $email;
+            $currData->email_verified_at = null;
+
+            try {
+                $currData->sendEmailVerificationNotification();
+            } catch (\Throwable $e) {
+                throw new \Exception("Failed to send verification email: " . $e->getMessage());
+            }
+
+            return true;
+        });
+    }
+    public function updatePassword(int $authId, string $password): bool
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+        return DB::transaction(function () use ($authId, $password) {
+            $currData = $this->authRepository->findAuthDataById($authId);
+            if (!$currData) {
+                return false; // Auth data not found for this user
+            }
+
+            $updatedData = [
+                'password' => $password,
+            ];
+
+            return $this->authRepository->updateAuthDataById($currData, $updatedData) > 0;
+        });
+    }
+
     public function getUsersStatistics()
     {
         return $this->authRepository->getUsersStatistics();

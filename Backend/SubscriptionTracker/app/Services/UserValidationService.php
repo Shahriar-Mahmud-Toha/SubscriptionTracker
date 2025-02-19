@@ -120,4 +120,39 @@ class UserValidationService implements UserValidationServiceInterface
 
         return $userDTO;
     }
+    public function validateUserEmailUpdate(Request $request)
+    {
+        $validator = Validator::make($request->only(['email']), [
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:authentications'],
+        ], [
+            'email.required' => 'The email field is required.',
+            'email.string' => 'The email field must be string.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.max' => 'Max email address length is 255 characters.',
+            'email.unique' => 'This email is already registered. Please use a different email.',
+        ]);
+        if ($validator->fails()) {
+            return [
+                'success' => false,
+                'errors' => $validator->messages(),
+            ];
+        }
+        $validatedData = $validator->validated();
+
+        return $validatedData['email'];
+    }
+    public function validateUserPasswordUpdate(Request $request)
+    {
+        $validator = Validator::make($request->only(['password', 'password_confirmation']), [
+            'password' => ['required', 'string', 'min:3', 'confirmed'],
+        ], [
+            'password.required' => 'The password field is required.',
+            'password.string' => 'The password field must be string.',
+            'password.min' => 'The password must be at least 3 characters long.',
+            'password.confirmed' => 'Password confirmation does not match.',
+        ]);
+        $validatedData = $validator->validated();
+
+        return $validatedData['password'];
+    }
 }

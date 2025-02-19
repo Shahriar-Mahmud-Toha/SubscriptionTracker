@@ -56,7 +56,7 @@ class AuthController extends Controller
             }
             $user->markEmailAsVerified();
 
-            return response()->json(['message' => 'Email successfully verified and account Created Successfully'], 201);
+            return response()->json(['message' => 'Email successfully verified. You can login!'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -194,6 +194,36 @@ class AuthController extends Controller
             return response()->json(["data" => $this->authService->getUsersStatistics()], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function updateEmail(Request $request): JsonResponse
+    {
+        try {
+            $email = $this->userValidationService->validateUserEmailUpdate($request);
+            if (is_array($email) && !$email['success']) {
+                return response()->json($email['errors'], 400);
+            }
+            if ($this->authService->updateEmail(Auth::user()->id, $email)) {
+                return response()->json(['message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
+            }
+            return response()->json(["message" => "Operation Failed"], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function updatePassword(Request $request): JsonResponse
+    {
+        try {
+            $password = $this->userValidationService->validateUserPasswordUpdate($request);
+            if (is_array($password) && !$password['success']) {
+                return response()->json($password['errors'], 400);
+            }
+            if ($this->authService->updatePassword(Auth::user()->id, $password)) {
+                return response()->json(['message' => 'Password Updated Successfully!'], 200);
+            }
+            return response()->json(["message" => "Operation Failed"], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred.', 'details' => $e->getMessage()], 500);
         }
     }
 }

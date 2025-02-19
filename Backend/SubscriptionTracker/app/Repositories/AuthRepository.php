@@ -35,6 +35,10 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return Authentication::with('user')->where('email', $email)->first();
     }
+    public function updateAuthDataById(Authentication $authData, array $updatedData): bool
+    {
+        return $authData->update($updatedData);
+    }
 
     public function createApiSession(array $apiSessionData): ApiSession|null
     {

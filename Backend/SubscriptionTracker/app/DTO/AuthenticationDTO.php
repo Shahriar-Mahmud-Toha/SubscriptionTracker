@@ -28,7 +28,7 @@ class AuthenticationDTO
             'role' => $this->role,
             'email' => $this->email,
             'password' => $this->password,
-            'verified' => $this->email_verified_at?->toDateTimeString(),
+            'email_verified_at' => $this->email_verified_at?->toDateTimeString(),
         ];
     }
 }

@@ -15,5 +15,7 @@ interface AuthServiceInterface
     public function invalidateToken(string $token): array | null;
 
     public function findAuthUserDetailsById(int $auth_id);
+    public function updateEmail(int $authId, string $email): bool;
+    public function updatePassword(int $authId, string $password): bool;
     public function getUsersStatistics();
 }
