@@ -226,4 +226,41 @@ class AuthController extends Controller
             return response()->json(['error' => 'An unexpected error occurred.', 'details' => $e->getMessage()], 500);
         }
     }
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        try {
+            $email = $this->userValidationService->validateExistingUserEmail($request);
+            if (is_array($email) && !$email['success']) {
+                return response()->json($email['errors'], 400);
+            }
+            if ($this->authService->forgotPassword($email)) {
+                return response()->json(['message' => 'Password reset link sent to your email.'], 200);
+            }
+            return response()->json(["message" => "Operation Failed"], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred.', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function resetPassword(Request $request): JsonResponse
+    {
+        try {
+            $data = $this->userValidationService->validatePasswordReset($request);
+            if (!empty($data['errors'])) {
+                return response()->json($data['errors'], 400);
+            }
+            $result = $this->authService->resetPassword($data['email'], $data['token'], $data['password']);
+            if ($result > 0) {
+                return response()->json(['message' => 'Password reset successfully!'], 200);
+            }
+            if ($result == -1) {
+                return response()->json(['message' => 'Invalid or expired token.'], 400);
+            }
+            if ($result == 0) {
+                return response()->json(['message' => 'No password reset request found for this user.'], 400);
+            }
+            return response()->json(["message" => "Operation Failed"], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred.', 'details' => $e->getMessage()], 500);
+        }
+    }
 }

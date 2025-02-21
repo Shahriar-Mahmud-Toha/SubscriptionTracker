@@ -4,9 +4,9 @@ namespace App\Repositories;
 
 use App\Models\ApiSession;
 use App\Models\Authentication;
-use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\DB;
 
 class AuthRepository implements AuthRepositoryInterface
 {
@@ -35,10 +35,33 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return Authentication::with('user')->where('email', $email)->first();
     }
-    public function updateAuthDataById(Authentication $authData, array $updatedData): bool
+    public function updateAuthData(Authentication $authData, array $updatedData): bool
     {
         return $authData->update($updatedData);
     }
+
+    public function storeOrUpdateToken(string $email, string $token, int $expireAfterMin): bool
+    {
+        return DB::table('password_resets')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => $token,
+                'created_at' => now(),
+                'expires_at' => now()->addMinutes($expireAfterMin)
+            ]
+        ) > 0;
+    }
+    public function findTokenByEmail(string $email): ?object
+    {
+        return DB::table('password_resets')->where('email', $email)->first();
+    }
+    public function deleteTokenByEmail(string $email): bool
+    {
+        return DB::table('password_resets')->where('email', $email)->delete() > 0;
+    }
+
+
+
 
     public function createApiSession(array $apiSessionData): ApiSession|null
     {

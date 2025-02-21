@@ -17,5 +17,9 @@ interface AuthServiceInterface
     public function findAuthUserDetailsById(int $auth_id);
     public function updateEmail(int $authId, string $email): bool;
     public function updatePassword(int $authId, string $password): bool;
+    
+    public function forgotPassword(string $email): bool;
+    public function resetPassword(string $email, string $token, string $password): int;
+
     public function getUsersStatistics();
 }

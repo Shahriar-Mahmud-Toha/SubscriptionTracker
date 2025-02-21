@@ -18,6 +18,7 @@ use App\Services\SubscriptionService;
 use App\Services\SubscriptionValidationService;
 use App\Services\UserService;
 use App\Services\UserValidationService;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -40,8 +41,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(Schedule $schedule): void
     {
-        //
+        $schedule->command('cleanup:password_resets')->hourly();
+        // $schedule->command('cleanup:password_resets')->everyMinute();
     }
 }

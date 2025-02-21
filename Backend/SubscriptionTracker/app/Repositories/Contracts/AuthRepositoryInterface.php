@@ -14,7 +14,11 @@ interface AuthRepositoryInterface
     public function findAuthDataByEmail(string $email): Authentication|null;
     public function findAuthUserDetailsById(int $id): Authentication|null;
     public function findAuthUserDetailsByEmail(string $email): Authentication|null;
-    public function updateAuthDataById(Authentication $authData, array $updatedData): bool;
+    public function updateAuthData(Authentication $authData, array $updatedData): bool;
+    
+    public function storeOrUpdateToken(string $email, string $token, int $expireAfterMin): bool;
+    public function findTokenByEmail(string $email): ?object;
+    public function deleteTokenByEmail(string $email): bool;
 
     public function createApiSession(array $apiSessionData): ApiSession|null;
     public function getTokenDataByAuthId(int $authId): EloquentCollection|null;

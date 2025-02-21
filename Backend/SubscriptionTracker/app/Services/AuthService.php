@@ -12,9 +12,11 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Token;
+use Illuminate\Support\Str;
 
 class AuthService implements AuthServiceInterface
 {
@@ -212,8 +214,8 @@ class AuthService implements AuthServiceInterface
                 'email_verified_at' => null
             ];
 
-            if (!$this->authRepository->updateAuthDataById($currData, $updatedData)) {
-                return false; 
+            if (!$this->authRepository->updateAuthData($currData, $updatedData)) {
+                return false;
             }
 
             $currData->email = $email;
@@ -242,9 +244,56 @@ class AuthService implements AuthServiceInterface
                 'password' => $password,
             ];
 
-            return $this->authRepository->updateAuthDataById($currData, $updatedData) > 0;
+            return $this->authRepository->updateAuthData($currData, $updatedData) > 0;
         });
     }
+    public function forgotPassword(string $email): bool
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+        return DB::transaction(function () use ($email) {
+            $token = Str::random(64);
+            $this->authRepository->storeOrUpdateToken($email, Hash::make($token), 1);
+
+            Mail::send('emails.password_reset', ['token' => $token], function ($message) use ($email) {
+                $message->to($email);
+                $message->subject('Reset Password Notification');
+            });
+
+            return true;
+        });
+    }
+    public function resetPassword(string $email, string $token, string $password): int
+    {
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        return DB::transaction(function () use ($email, $token, $password) {
+            $data = $this->authRepository->findTokenByEmail($email);
+            if (!$data) {
+                return 0; // No password reset request found for this user.
+            }
+            if (!Hash::check($token, $data->token)) {
+                return -1; // Invalid token.
+            }
+            $authData = $this->authRepository->findAuthDataByEmail($email);
+            if (!$authData) {
+                return 0; // No user found.
+            }
+
+            $updatedData = ['password' => $password];
+
+            if (!$this->authRepository->updateAuthData($authData, $updatedData)) {
+                throw new \Exception("Failed to update password."); // Force rollback
+            }
+
+            if (!$this->authRepository->deleteTokenByEmail($email)) {
+                throw new \Exception("Failed to delete reset token."); // Force rollback
+            }
+
+            return 1; 
+        });
+    }
+
+
 
     public function getUsersStatistics()
     {
