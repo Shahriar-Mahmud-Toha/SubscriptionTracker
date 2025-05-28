@@ -1,7 +1,9 @@
+import PageTitle from "@/components/titles/page-title";
+
 export default function Dashboard() {
     return (
-        <div>
-            Dashboard Page
+        <div className="flex flex-col items-center">
+            <PageTitle title="Dashboard" />
         </div>
     );
 }

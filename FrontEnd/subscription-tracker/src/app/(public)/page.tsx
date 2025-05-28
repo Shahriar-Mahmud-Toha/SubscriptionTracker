@@ -5,7 +5,7 @@ import LinkButtonRegular from "@/components/buttons/link-button-regular";
 
 export default function Home() {
   return (
-    <div className="mb-20">
+    <div className="container mb-20 flex flex-col items-center">
       <HomeHero image={heroImage} imgAlt="Subscription Tracker Hero Image" appName="Subscription Tracker" appNameColor="text-custom-violet" heroText="is an online tool designed to help you easily manage your subscription details and receive automatic email reminders before any subscription expires." />
       <HeroNotes noteText="This tool is created for testing purposes only and is not intended for real-world use." customClasses="my-5" />
       <div className="flex justify-center mt-10">

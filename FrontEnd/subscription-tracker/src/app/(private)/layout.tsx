@@ -1,4 +1,14 @@
-import Link from "next/link";
+import BrandInfo from "@/components/headers/brand-info";
+import logo from "../../../public/logo.svg";
+import HeaderAction from "@/features/auth/private/components/header-action";
+
+//Suspense fallback Test
+// import { delay } from "@/utils/timing";
+// const HeaderAction = async () => {
+//   await delay(1000);
+//   const { default: HeaderAction } = await import("@/features/auth/private/components/header-action");
+//   return <HeaderAction customClasses="" />;
+// };
 
 export default function RootLayout({
   children,
@@ -6,13 +16,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <Link className="mr-2" href="/dashboard">Dashboard</Link>
-      <Link className="mr-2" href="/profile">Profile</Link>
-      <Link className="mr-2" href="/logout">Logout</Link> 
-      <br />
-      {children} 
+    <div className="container mx-auto px-5 pt-2">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-5">
+        <BrandInfo
+          url="/"
+          logo={logo}
+          altImg="Subscription Tracker Logo"
+          developerName="Md. Shahriar Mahmud"
+          profileLink="http://github.com/Shahriar-Mahmud-Toha"
+          customClasses="mb-5 md:mb-auto"
+          priority={true}
+        />
+        <HeaderAction customClasses="" />
+      </div>
+      {children}
     </div>
   );
 }
