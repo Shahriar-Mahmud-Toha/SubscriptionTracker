@@ -3,45 +3,21 @@
 import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
-import { delay } from '@/utils/timing';
-import { GeneralInfoFormData } from '@/features/profile/types';
-import { useRouter } from 'next/navigation';
-import { useGeneralInfo } from '@/features/profile/contexts/general-info-context';
-import { getGeneralInfo } from '@/features/profile/api/profile';
+import { GeneralInfoType } from '@/features/profile/types';
 
-
-export default function GeneralInfoForm({ customClass }: { customClass?: string }) {
-    const router = useRouter();
-    const { isEditing, setIsEditing, isUpdated } = useGeneralInfo();
+export default function GeneralInfoForm({handleUpdate, customClass }: { handleUpdate: (data: GeneralInfoType) => Promise<void>, customClass?: string }) {
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<GeneralInfoFormData>({
+    } = useForm<GeneralInfoType>({
         mode: "onBlur",
     });
 
-    const onSubmit = async (data: GeneralInfoFormData) => {
-        try {
-            // Simulate API call delay
-            console.log(data);
-            // TODO: Implement your update logic here
-            await delay(2000); // 2 seconds delay
-
-            // Call the success callback if provided
-            isUpdated.current = true;
-            setIsEditing(false);
-            getGeneralInfo(); //re-work needed. GO for states and make client.
-            router.refresh();
-        } catch (error) {
-            console.error('Update failed:', error);
-        }
-    };
-
     return (
         <div className={`w-full max-w-md mx-auto bg-secondary-background rounded-xl shadow-lg ${customClass}`}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-                <FormInput<GeneralInfoFormData>
+            <form onSubmit={handleSubmit(handleUpdate)} className="space-y-6" noValidate>
+                <FormInput<GeneralInfoType>
                     id="first_name"
                     label="First Name"
                     type="text"
@@ -61,7 +37,7 @@ export default function GeneralInfoForm({ customClass }: { customClass?: string 
                     }}
                 />
 
-                <FormInput<GeneralInfoFormData>
+                <FormInput<GeneralInfoType>
                     id="last_name"
                     label="Last Name"
                     type="text"
@@ -80,7 +56,7 @@ export default function GeneralInfoForm({ customClass }: { customClass?: string 
                         },
                     }}
                 />
-                <FormInput<GeneralInfoFormData>
+                <FormInput<GeneralInfoType>
                     id="dob"
                     label="Date of Birth"
                     type="date"

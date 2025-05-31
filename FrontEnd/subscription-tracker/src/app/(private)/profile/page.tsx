@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import PageTitle from "@/components/titles/page-title";
 import SectionTitle from "@/components/titles/section-title";
+import GeneralInfoSection from "@/features/profile/components/general-info/general-info-section";
 import GeneralInfoEditButton from "@/features/profile/components/general-info/general-info-edit-button";
 import { GeneralInfoContextProvider } from "@/features/profile/contexts/general-info-context";
-import GeneralInfoController from '@/features/profile/components/general-info/general-info-controller';
 import GeneralInfoBackButton from "@/features/profile/components/general-info/general-info-back-button";
+import GeneralInfoLoader from "@/features/profile/components/general-info/general-info-loader";
 
 export default function Profile() {
 
@@ -17,7 +19,9 @@ export default function Profile() {
                         <GeneralInfoEditButton />
                         <GeneralInfoBackButton />
                     </div>
-                    <GeneralInfoController />
+                    <Suspense fallback={GeneralInfoLoader()}>
+                        <GeneralInfoSection />
+                    </Suspense>
                 </GeneralInfoContextProvider>
             </div>
         </div>
