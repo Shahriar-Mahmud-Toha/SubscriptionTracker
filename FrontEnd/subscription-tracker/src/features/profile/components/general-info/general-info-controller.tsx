@@ -5,25 +5,31 @@ import { useGeneralInfo } from '@/features/profile/contexts/general-info-context
 import GeneralInfoForm from '@/features/profile/components/general-info/general-info-form';
 import { updateGeneralInfo } from '@/features/profile/actions';
 import ShowGeneralInfo from '@/features/profile/components/general-info/show-general-info';
+import ToastPromiseGeneral from '@/components/toasts/toast-promise-general';
 
-export default function GeneralInfoController({ initialData }: { initialData: GeneralInfoType }) {
+export default function GeneralInfoController({ initialData = { first_name: '', last_name: '', dob: '' } }: { initialData: GeneralInfoType }) {
     const { isEditing, setIsEditing, backBtnClicked, setBackBtnClicked } = useGeneralInfo();
 
     const [optimisticData, updateOptimisticData] = useOptimistic(
         initialData,
         (state, newData: GeneralInfoType) => {
-            return { ...state, ...newData } // Spread the newData properties into the state
+            return { ...state, ...newData }
         }
     );
+
     const handleUpdateGeneralInfo = async (formData: GeneralInfoType) => {
         setIsEditing(false);
         setBackBtnClicked(false);
+
         startTransition(async () => {
             updateOptimisticData(formData);
-            const result = await updateGeneralInfo(formData);
-            if (result.error) {
-                console.error('Update failed:', result.error);
-            }
+
+            ToastPromiseGeneral({
+                promise: updateGeneralInfo(formData),
+                loadingMessage: 'Updating General Info...',
+                successMessage: 'General Information Updated Successfully',
+                errorMessage: 'Failed to update General Information',
+            });
         });
     };
     useEffect(() => {
@@ -37,10 +43,9 @@ export default function GeneralInfoController({ initialData }: { initialData: Ge
             {isEditing && !backBtnClicked ? (
                 <GeneralInfoForm
                     handleUpdate={handleUpdateGeneralInfo}
-                    customClass={""}
                 />
             ) : (
-                <ShowGeneralInfo data={optimisticData} customClass='' />
+                <ShowGeneralInfo data={optimisticData} />
             )}
         </>
     );

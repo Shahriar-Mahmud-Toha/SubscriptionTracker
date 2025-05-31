@@ -7,11 +7,7 @@ export default async function GeneralInfoSection() {
         return <p>Error fetching data</p>
     }
     if (!response.data) {
-        return <GeneralInfoController initialData={{
-            first_name: '',
-            last_name: '',
-            dob: ''
-        }} />
+        return null;
     }
     return (
         <GeneralInfoController initialData={response.data} />

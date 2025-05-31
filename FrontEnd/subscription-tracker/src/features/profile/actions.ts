@@ -42,7 +42,7 @@ export async function updateGeneralInfo(formData: GeneralInfoType) {
         await delay(2000); // Simulating API call
         return { data: true, error: null };
     } catch (error) {
-        return { error: 'Failed to update profile information' };
+        return { error: 'SS: Failed to update profile information' };
     }
     finally {
         revalidatePath('/profile');

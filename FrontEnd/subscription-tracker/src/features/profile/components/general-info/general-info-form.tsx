@@ -5,7 +5,13 @@ import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
 import { GeneralInfoType } from '@/features/profile/types';
 
-export default function GeneralInfoForm({handleUpdate, customClass }: { handleUpdate: (data: GeneralInfoType) => Promise<void>, customClass?: string }) {
+export default function GeneralInfoForm({
+    handleUpdate,
+    customClass = "" // provide default empty string
+}: {
+    handleUpdate: (data: GeneralInfoType) => Promise<void>,
+    customClass?: string
+}) {
     const {
         register,
         handleSubmit,
@@ -14,8 +20,10 @@ export default function GeneralInfoForm({handleUpdate, customClass }: { handleUp
         mode: "onBlur",
     });
 
+    const formClass = `w-full max-w-md mx-auto bg-secondary-background rounded-xl shadow-lg ${customClass}`.trim();
+
     return (
-        <div className={`w-full max-w-md mx-auto bg-secondary-background rounded-xl shadow-lg ${customClass}`}>
+        <div className={formClass}>
             <form onSubmit={handleSubmit(handleUpdate)} className="space-y-6" noValidate>
                 <FormInput<GeneralInfoType>
                     id="first_name"

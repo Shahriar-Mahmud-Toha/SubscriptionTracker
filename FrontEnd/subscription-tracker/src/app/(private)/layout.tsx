@@ -1,3 +1,4 @@
+import { Toaster, toast } from 'sonner'
 import BrandInfo from "@/components/headers/brand-info";
 import logo from "../../../public/logo.svg";
 import HeaderAction from "@/features/auth/private/components/header-action";
@@ -30,6 +31,18 @@ export default function RootLayout({
         <HeaderAction customClasses="" />
       </div>
       {children}
+      <Toaster
+        position="top-center"
+        richColors
+        expand={false}
+        toastOptions={{
+          style: {
+            background: 'var(--secondary-foreground)',
+            borderColor: 'var(--custom-violet)',
+            color: 'var(--custom-violet)',
+          },
+        }}
+      />
     </div>
   );
 }
