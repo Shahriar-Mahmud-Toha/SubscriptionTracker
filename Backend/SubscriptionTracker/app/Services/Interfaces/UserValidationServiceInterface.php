@@ -11,7 +11,7 @@ interface UserValidationServiceInterface
     public function validateUserLogin(Request $request);
     public function validateUser(Request $request, int $auth_id);
     public function validateUserEmailUpdate(Request $request);
-    public function validateUserPasswordUpdate(Request $request);
+    public function validateUserPasswordUpdate(Request $request, string $authId);
     public function validateExistingUserEmail(Request $request);
     public function validatePasswordReset(Request $request);
 }

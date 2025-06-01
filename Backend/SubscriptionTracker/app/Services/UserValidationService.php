@@ -5,16 +5,23 @@ namespace App\Services;
 use App\DTO\AuthenticationDTO;
 use App\DTO\UserDTO;
 use App\Enums\Gender;
+use App\Repositories\Contracts\AuthRepositoryInterface;
 // use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Interfaces\UserValidationServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserValidationService implements UserValidationServiceInterface
 {
     // protected $userRepository;
+    protected $authRepository;
 
+    public function __construct(AuthRepositoryInterface $authRepository)
+    {
+        $this->authRepository = $authRepository;
+    }
     // public function __construct(UserRepositoryInterface $userRepository)
     // {
     //     $this->userRepository = $userRepository;
@@ -141,17 +148,35 @@ class UserValidationService implements UserValidationServiceInterface
 
         return $validatedData['email'];
     }
-    public function validateUserPasswordUpdate(Request $request)
+    public function validateUserPasswordUpdate(Request $request, string $authId)
     {
-        $validator = Validator::make($request->only(['password', 'password_confirmation']), [
+        $validator = Validator::make($request->only(['current_password', 'password', 'password_confirmation']), [
+            'current_password' => ['required', 'string'],
             'password' => ['required', 'string', 'min:3', 'confirmed'],
         ], [
+            'current_password.required' => 'The current password field is required.',
+            'current_password.string' => 'The current password field must be string.',
             'password.required' => 'The password field is required.',
             'password.string' => 'The password field must be string.',
             'password.min' => 'The password must be at least 3 characters long.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
+
+        if ($validator->fails()) {
+            return [
+                'success' => false,
+                'errors' => $validator->messages(),
+            ];
+        }
         $validatedData = $validator->validated();
+        $authData = $this->authRepository->findAuthDataById($authId);
+
+        if (!Hash::check($validatedData['current_password'], $authData->password)) {
+            return [
+                'success' => false,
+                'errors' => ['current_password' => ['Current password is incorrect.']],
+            ];
+        }
 
         return $validatedData['password'];
     }
@@ -188,7 +213,7 @@ class UserValidationService implements UserValidationServiceInterface
             'email.email' => 'Please enter a valid email address.',
             'email.max' => 'Max email address length is 255 characters.',
             'email.exists' => 'No password reset request found for this user.',
-            
+
             'token.required' => 'The token field is required.',
             'token.string' => 'The token field must be string.',
             'token.max' => 'Max token length is 255 characters.',
@@ -207,9 +232,9 @@ class UserValidationService implements UserValidationServiceInterface
         $validatedData = $validator->validated();
 
         return [
-            'email'=>$validatedData['email'],
-            'token'=>$validatedData['token'],
-            'password'=>$validatedData['password'],
+            'email' => $validatedData['email'],
+            'token' => $validatedData['token'],
+            'password' => $validatedData['password'],
         ];
     }
 }

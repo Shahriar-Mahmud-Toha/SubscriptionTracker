@@ -214,11 +214,12 @@ class AuthController extends Controller
     public function updatePassword(Request $request): JsonResponse
     {
         try {
-            $password = $this->userValidationService->validateUserPasswordUpdate($request);
+            $authId = Auth::user()->id;
+            $password = $this->userValidationService->validateUserPasswordUpdate($request, $authId);
             if (is_array($password) && !$password['success']) {
                 return response()->json($password['errors'], 400);
             }
-            if ($this->authService->updatePassword(Auth::user()->id, $password)) {
+            if ($this->authService->updatePassword($authId, $password)) {
                 return response()->json(['message' => 'Password Updated Successfully!'], 200);
             }
             return response()->json(["message" => "Operation Failed"], 500);
