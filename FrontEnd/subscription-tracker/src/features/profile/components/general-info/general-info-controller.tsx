@@ -7,7 +7,7 @@ import { updateGeneralInfo } from '@/features/profile/actions';
 import ShowGeneralInfo from '@/features/profile/components/general-info/show-general-info';
 import ToastPromiseGeneral from '@/components/toasts/toast-promise-general';
 
-export default function GeneralInfoController({ initialData = { first_name: '', last_name: '', dob: '' } }: { initialData: GeneralInfoType }) {
+export default function GeneralInfoController({ initialData }: { initialData: GeneralInfoType }) {
     const { isEditing, setIsEditing, backBtnClicked, setBackBtnClicked } = useGeneralInfo();
 
     const [optimisticData, updateOptimisticData] = useOptimistic(

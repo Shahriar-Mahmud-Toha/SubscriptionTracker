@@ -7,8 +7,6 @@ interface GeneralInfoContextType {
     setIsEditing: (value: boolean) => void;
     backBtnClicked: boolean;
     setBackBtnClicked: (value: boolean) => void;
-    // error: string | null;
-    // setError: (value: string | null) => void;
 }
 
 const GeneralInfoContext = createContext<GeneralInfoContextType | undefined>(undefined);
@@ -16,7 +14,6 @@ const GeneralInfoContext = createContext<GeneralInfoContextType | undefined>(und
 export function GeneralInfoContextProvider({ children }: { children: ReactNode }) {
     const [isEditing, setIsEditing] = useState(false);
     const [backBtnClicked, setBackBtnClicked] = useState(false);
-    // const [error, setError] = useState<string | null>(null);
 
     return (
         <GeneralInfoContext.Provider value={{ isEditing, setIsEditing, backBtnClicked, setBackBtnClicked}}>
