@@ -19,7 +19,7 @@ import PasswordUpdateController from "@/features/profile/components/password-upd
 export default function Profile() {
 
     return (
-        <div className="flex flex-col items-center mb-10">
+        <div className="flex flex-col items-center mb-20">
             <PageTitle title="Profile" />
             <div className="w-full max-w-md mx-auto mt-4 p-6 bg-secondary-background rounded-xl shadow-lg">
                 <GeneralInfoContextProvider>

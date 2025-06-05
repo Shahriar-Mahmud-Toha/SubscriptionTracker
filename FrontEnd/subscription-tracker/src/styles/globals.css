@@ -9,6 +9,7 @@
   --secondary-foreground: #18171E;
   --custom-violet: #A896F9;
   --red-general: #ff5260;
+  --tooltip-background: #27272E;
 }
 
 @theme inline {
@@ -18,9 +19,19 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-regular: var(--regular);
   --color-custom-violet: var(--custom-violet);
+  --color-red-general: var(--red-general);
   --color-muted-foreground: var(--muted-foreground);
+  --color-tooltip-background: var(--tooltip-background);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+@layer components{
+  .c-container{
+      @apply container mx-auto px-2
+  }
+  .scrollbar-custom{
+    @apply [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-secondary-background [&::-webkit-scrollbar-thumb]:bg-secondary-background [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-foreground/20
+  }
 }
 
 @media (prefers-color-scheme: dark) {

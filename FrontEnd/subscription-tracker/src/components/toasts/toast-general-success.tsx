@@ -1,3 +1,4 @@
+'use client';
 import { toast } from "sonner";
 
 export default function ToastGeneralSuccess(message?: string, cusDuration = 3000) {
