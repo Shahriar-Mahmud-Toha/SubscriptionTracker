@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UserValidationService implements UserValidationServiceInterface
 {
@@ -147,6 +148,50 @@ class UserValidationService implements UserValidationServiceInterface
         $validatedData = $validator->validated();
 
         return $validatedData['email'];
+    }
+    public function validateUserIdFromToken(Request $request)
+    {
+        $validator = Validator::make($request->only(['token']), [
+            'token' => ['required', 'string'],
+        ], [
+            'token.required' => 'The token field is required.',
+            'token.string' => 'The token field must be string.',
+        ]);
+        if ($validator->fails()) {
+            return [
+                'success' => false,
+                'errors' => $validator->messages(),
+            ];
+        }
+        $validatedData = $validator->validated();
+        $token = $validatedData['token'];
+        try {
+            JWTAuth::setToken($token);
+            JWTAuth::parseToken();
+            $payload = JWTAuth::getPayload();
+
+            if ($payload->get('type') !== 'signup') {
+                return [
+                    'success' => false,
+                    'errors' => ['token' => ['Invalid token type']],
+                ];
+            }
+            $userId = $payload->get('sub');
+            if (!$userId) {
+                return [
+                    'success' => false,
+                    'errors' => ['token' => ['User ID not found in token']],
+                ];
+            }
+
+            return $userId;
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'errors' => ['token' => ['Invalid or expired token']],
+            ];
+        }
     }
     public function validateUserPasswordUpdate(Request $request, string $authId)
     {

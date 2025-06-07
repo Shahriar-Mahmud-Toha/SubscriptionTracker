@@ -6,13 +6,13 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('user/signup', [AuthController::class, 'signupUser']);
-Route::get('user/signup/verifyEmail/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['signed', 'throttle:2,1'])->name('verification.verify');
-Route::get('user/signup/reverifyEmail/{id}', [AuthController::class, 'reVerifyEmail'])->middleware(['throttle:2,1'])->name('verification.send'); //throttle:2,1 => max 2 request in 1 min.
-Route::post('user/password/forgot', [AuthController::class, 'forgotPassword'])->middleware(['throttle:40,10'])->name('forgot.password');;
-Route::post('user/password/reset', [AuthController::class, 'resetPassword'])->middleware(['throttle:40,10'])->name('reset.password');;
+Route::get('user/signup/verify-email', [AuthController::class, 'verifyEmail'])->middleware(['signed', 'throttle:client'])->name('verification.verify');
+Route::post('user/signup/reverifyEmail', [AuthController::class, 'reVerifyEmail'])->middleware(['throttle:client'])->name('verification.send'); //throttle:3,1 => max 3 request in 1 min.
+Route::post('user/password/forgot', [AuthController::class, 'forgotPassword'])->middleware(['throttle:client'])->name('forgot.password');
+Route::post('user/password/reset', [AuthController::class, 'resetPassword'])->middleware(['throttle:client'])->name('reset.password');
 
-Route::post('login', [AuthController::class, 'login']);
-Route::post('admin/signup', [AuthController::class, 'signupAdmin']);
+Route::post('login', [AuthController::class, 'login'])->middleware(['throttle:client']);
+Route::post('admin/signup', [AuthController::class, 'signupAdmin'])->middleware(['throttle:client']);
 // Route::get('me', [AuthController::class, 'me'])->middleware(['auth:api', 'authorization:admin,user']);
 
 Route::group(['middleware' => 'authentication'], function () {

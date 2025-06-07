@@ -36,15 +36,20 @@ class AuthController extends Controller
             if (!$result) {
                 return response()->json(['message' => 'Account Creation Failed'], 500);
             }
-            return response()->json(['id' => $result->id, 'message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
+            return response()->json(['token' => $result, 'message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
     }
-    public function verifyEmail(int $id, string $hash): JsonResponse
+    public function verifyEmail(Request $request): JsonResponse
     {
         try {
-            $user = $this->authService->findAuthUserDetailsById($id);
+            $id = $request->query('id');
+            $hash = $request->query('hash');
+            if (!$id) {
+                return response()->json(['message' => 'Invalid verification link: missing user ID'], 400);
+            }
+            $user = $this->authService->findAuthUserDetailsById((int)$id);
             if (!$user) {
                 return response()->json(['message' => 'No Valid user found.'], 400);
             }
@@ -61,17 +66,21 @@ class AuthController extends Controller
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
     }
-    public function reVerifyEmail(int $id): JsonResponse
+    public function reVerifyEmail(Request $request): JsonResponse
     {
         try {
-            $user = $this->authService->findAuthUserDetailsById($id);
+            $data = $this->userValidationService->validateUserIdFromToken($request);
+            if (is_array($data) && !$data['success']) {
+                return response()->json($data['errors'], 400);
+            }
+            $user = $this->authService->findAuthUserDetailsById($data);
             if (!$user) {
                 return response()->json(['message' => 'No Valid user found.'], 400);
             }
             if ($user->email_verified_at) {
                 return response()->json(['message' => 'Email already verified. You can login!'], 200);
             }
-            $user->sendEmailVerificationNotification();
+            $this->authService->sendVerificationEmail($user);
             return response()->json(['message' => 'Verification link sent!'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);

@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\DTO\AuthenticationDTO;
 use App\Models\Authentication;
+use App\Notifications\CustomVerifyEmail;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -35,9 +35,38 @@ class AuthService implements AuthServiceInterface
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         return DB::transaction(function () use ($authData) {
             $data = $this->authRepository->signup($authData->toArray());
-            event(new Registered($data));
-            return $data;
+            $token = JWTAuth::customClaims([
+                'role' => $data->role,
+                'type' => 'signup',
+                'exp' => Carbon::now()->addMinutes(60)->timestamp
+            ])->fromUser($data);
+            $this->sendVerificationEmail($data);
+            return $token;
         });
+    }
+
+    public function generateVerificationUrls($user)
+    {
+        $hash = sha1($user->email);
+        $expiration = now()->addMinutes(60);
+        $signedUrl = url()->temporarySignedRoute('verification.verify', $expiration, ['id' => $user->id, 'hash' => $hash]);
+        $parsed = parse_url($signedUrl);
+        $queryParams = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $queryParams);
+        }
+        $frontendUrl = env('FRONT_END_URL') . '/verify-email?' . http_build_query($queryParams + ['hash' => $hash]);
+        return [
+            'signed_url' => $signedUrl,
+            'frontend_url' => $frontendUrl,
+        ];
+    }
+
+    public function sendVerificationEmail($user)
+    {
+        $urls = $this->generateVerificationUrls($user);
+        $frontendUrl = $urls['frontend_url'];
+        $user->notify(new CustomVerifyEmail($frontendUrl));
     }
 
     public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null
@@ -289,7 +318,7 @@ class AuthService implements AuthServiceInterface
                 throw new \Exception("Failed to delete reset token."); // Force rollback
             }
 
-            return 1; 
+            return 1;
         });
     }
 
