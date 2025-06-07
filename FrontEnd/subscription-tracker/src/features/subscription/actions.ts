@@ -1,8 +1,8 @@
 'use server';
 import { delay } from "@/utils/timing";
-import { SubscriptionType } from "./types";
+import { SubscriptionType } from "@/features/subscription/types";
 import { revalidatePath } from "next/cache";
-import { SignupFormData } from "../auth/types";
+import { SignupFormData } from "@/features/auth/types";
 import { cookies, headers } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import * as UAParser from 'ua-parser-js';

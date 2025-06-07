@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { validateResetPasswordParams, validateSignupVerifyEmailParams } from '@/utils/validator';
-import { verifySignupEmail } from './features/subscription/actions';
+import { validateResetPasswordParams } from '@/utils/validator';
 
 export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname === '/forgot/reset_password') {
