@@ -5,6 +5,7 @@
   --background: #ffffff;
   --foreground: #171717;
   --regular: #CBC9D5;
+  --regular-muted: #A8A5B3;
   --secondary-background: #201F26;
   --secondary-foreground: #18171E;
   --custom-violet: #A896F9;
@@ -18,6 +19,7 @@
   --color-foreground: var(--foreground);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-regular: var(--regular);
+  --color-regular-muted: var(--regular-muted);
   --color-custom-violet: var(--custom-violet);
   --color-red-general: var(--red-general);
   --color-muted-foreground: var(--muted-foreground);

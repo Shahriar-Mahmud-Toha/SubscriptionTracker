@@ -1,3 +1,4 @@
+import { Toaster } from 'sonner'
 import logo from "../../../public/logo.svg";
 import BrandInfo from "@/components/headers/brand-info";
 
@@ -18,6 +19,18 @@ export default function RootLayout({
         priority={true}
       />
       {children}
+      <Toaster
+        position="top-center"
+        richColors
+        expand={false}
+        toastOptions={{
+          style: {
+            background: 'var(--secondary-foreground)',
+            borderColor: 'var(--custom-violet)',
+            color: 'var(--custom-violet)',
+          },
+        }}
+      />
     </div>
   );
 }
