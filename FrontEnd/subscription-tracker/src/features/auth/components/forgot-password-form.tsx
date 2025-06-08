@@ -3,30 +3,26 @@
 import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
-import { delay } from '@/utils/timing';
 import { ForgotPasswordFormData } from '@/features/auth/types';
-import { useRouter } from 'next/navigation';
+import { forgotPassword } from '@/features/subscription/actions';
+import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
+import ToastGeneralError from '@/components/toasts/toast-general-error';
 
 export default function ForgotPasswordForm({ customClass }: { customClass?: string }) {
-    const router = useRouter();
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting, isSubmitSuccessful },
+        formState: { errors, isSubmitting },
     } = useForm<ForgotPasswordFormData>({
         mode: "onBlur",
     });
 
     const onSubmit = async (data: ForgotPasswordFormData) => {
-        try {
-            // Simulate API call delay
-            console.log(data);
-            // TODO: Implement your login logic here
-            await delay(2000); // 2 seconds delay
-
-            // router.push('/login'); //temporary
-        } catch (error) {
-            console.error('Forgot Password failed:', error);
+        const result = await forgotPassword(data.email);
+        if (!result.error) {
+            ToastGeneralSuccess(result.data);
+        } else {
+            ToastGeneralError(result.error);
         }
     };
 
@@ -52,13 +48,8 @@ export default function ForgotPasswordForm({ customClass }: { customClass?: stri
                         },
                     }}
                 />
-                {isSubmitSuccessful && (
-                    <p className="text-sm text-custom-violet">
-                        We will send a link to your email to reset your password.
-                    </p>
-                )}
 
-                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Sending Reset Link..." text="Send Password Reset Link" customClasses="" disabledOnSubmit={isSubmitSuccessful} />
+                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Sending Reset Link..." text="Send Password Reset Link" customClasses="" />
             </form>
         </div>
     );

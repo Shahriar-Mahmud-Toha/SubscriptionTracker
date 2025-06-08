@@ -4,55 +4,30 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import FormInput from '@/components/forms/form-input';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
-import { delay } from '@/utils/timing';
 import { ResetPasswordFormData } from '@/features/auth/types';
+import { resetPassword } from '@/features/subscription/actions';
+import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
+import ToastGeneralError from '@/components/toasts/toast-general-error';
 
-
-export default function ResetPasswordForm({ email, token, customClass = "" }: { email: string, token: string, customClass?: string }) {
+export default function ResetPasswordForm({ token, customClass = "" }: { token: string, customClass?: string }) {
     const router = useRouter();
     const {
         register,
         handleSubmit,
         watch,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isSubmitSuccessful },
     } = useForm<ResetPasswordFormData>({
         mode: "onBlur",
     });
 
     const onSubmit = async (data: ResetPasswordFormData) => {
-        try {
-            // Combine form data with token
-            const resetData = {
-                email,
-                token,
-                ...data
-            };
-
-            console.log(resetData);
-
-            // const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/password/reset`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Accept': 'application/json', 
-            //     },
-            //     body: JSON.stringify(resetData),
-            // });
-
-            // const responseData = await response.json();
-
-            // if (!response.ok) {
-            //     throw new Error(responseData.message || 'Password reset failed');
-            // }
-
-            // Optional: Add a small delay for better UX
-            await delay(500);
-
-            // Redirect to login after successful password reset
+        const result = await resetPassword(token, data);
+        if (!result.error) {
+            ToastGeneralSuccess(result.data);
             router.push('/login');
-        } catch (error) {
-            console.error('Reset Password failed:', error);
-            // TODO: Add error toast notification here
+        } else {
+            ToastGeneralError(result.error);
+            router.push('/forgot');
         }
     };
 
@@ -93,6 +68,7 @@ export default function ResetPasswordForm({ email, token, customClass = "" }: { 
                     isSubmitting={isSubmitting}
                     disabledText="Resetting Password..."
                     text="Reset Password"
+                    disabledOnSubmit={isSubmitSuccessful}
                     customClasses=""
                 />
             </form>

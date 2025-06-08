@@ -2,7 +2,7 @@
 import { delay } from "@/utils/timing";
 import { SubscriptionType } from "@/features/subscription/types";
 import { revalidatePath } from "next/cache";
-import { SignupFormData } from "@/features/auth/types";
+import { ResetPasswordFormData, SignupFormData } from "@/features/auth/types";
 import { cookies, headers } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import * as UAParser from 'ua-parser-js';
@@ -219,6 +219,72 @@ export async function verifySignupEmail(path: string, uid:string) {
         return { data: null, error: `Email verification failed with status: ${response.status}` };
     } catch (error) {
         return { data: null, error: "Invalid or Expired Verification Link" };
+    }
+}
+export async function forgotPassword(email:string) {
+    try {
+        const [clientId, clientIP, deviceInfo] = await Promise.all([
+            getClientId(),
+            getClientIP(),
+            getDeviceInfo()
+        ]);
+        const response = await fetch(`${process.env.BACKEND_URL}/user/password/forgot`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Client-ID': clientId,
+                'X-Client-IP': clientIP,
+                'X-Device-Info': deviceInfo,
+            },
+            body: JSON.stringify({ email: email}),
+        });
+
+        const data = await response.json();
+        if (response.status === 200 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 400 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        if (response.status === 429 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        return { data: null, error: `Forgot Password operation failed with status: ${response.status}` };
+    } catch (error) {
+        return { data: null, error: "Failed to Forgot Password" };
+    }
+}
+export async function resetPassword(token: string, formData:ResetPasswordFormData) {
+    try {
+        const [clientId, clientIP, deviceInfo] = await Promise.all([
+            getClientId(),
+            getClientIP(),
+            getDeviceInfo()
+        ]);
+        const response = await fetch(`${process.env.BACKEND_URL}/user/password/reset`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Client-ID': clientId,
+                'X-Client-IP': clientIP,
+                'X-Device-Info': deviceInfo,
+            },
+            body: JSON.stringify({ token: token, password: formData.password, password_confirmation: formData.password_confirmation }),
+        });
+
+        const data = await response.json();
+        if (response.status === 200 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 400 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        if (response.status === 429 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        return { data: null, error: `Reset Password failed with status: ${response.status}` };
+    } catch (error) {
+        return { data: null, error: "Failed to Reset Password" };
     }
 }
 

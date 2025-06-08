@@ -45,27 +45,13 @@ export const isValidToken = (token: string): boolean => {
  * @param token - The token to validate
  * @returns object - Contains validation results and any error messages
  */
-export const validateResetPasswordParams = (email: string, token: string): {
-    isValid: boolean;
-    errors: {
-        email?: string;
-        token?: string;
-    };
-} => {
-    const errors: { email?: string; token?: string } = {};
-
-    if (!isValidEmail(email)) {
-        errors.email = 'Invalid email format';
-    }
+export const validateResetPasswordToken = (token: string): { isValid: boolean; error?: string } => {
 
     if (!isValidToken(token)) {
-        errors.token = 'Invalid token format';
+        return { isValid: false, error: 'Invalid token format' };
     }
 
-    return {
-        isValid: Object.keys(errors).length === 0,
-        errors
-    };
+    return { isValid: true };
 };
 
 export const validateSignupVerifyEmailParams = (expires: string, hash: string, id: string, signature: string): { isValid: boolean; error?: string } => {
