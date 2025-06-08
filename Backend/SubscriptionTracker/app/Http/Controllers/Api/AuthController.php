@@ -258,7 +258,7 @@ class AuthController extends Controller
             if (!empty($data['errors'])) {
                 return response()->json($data['errors'], 400);
             }
-            $result = $this->authService->resetPassword($data['email'], $data['token'], $data['password']);
+            $result = $this->authService->resetPassword($data['token'], $data['password']);
             if ($result > 0) {
                 return response()->json(['message' => 'Password reset successfully!'], 200);
             }

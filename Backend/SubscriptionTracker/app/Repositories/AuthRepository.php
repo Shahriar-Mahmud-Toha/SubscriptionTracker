@@ -55,9 +55,17 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return DB::table('password_resets')->where('email', $email)->first();
     }
+    public function getTokenData(string $token): ?object
+    {
+        return DB::table('password_resets')->where('token', $token)->first();
+    }
     public function deleteTokenByEmail(string $email): bool
     {
         return DB::table('password_resets')->where('email', $email)->delete() > 0;
+    }
+    public function deleteToken(string $token): bool
+    {
+        return DB::table('password_resets')->where('token', $token)->delete() > 0;
     }
 
 

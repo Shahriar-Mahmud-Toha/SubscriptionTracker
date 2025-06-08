@@ -248,17 +248,10 @@ class UserValidationService implements UserValidationServiceInterface
     }
     public function validatePasswordReset(Request $request)
     {
-        $validator = Validator::make($request->only(['email', 'token', 'password', 'password_confirmation']), [
-            'email' => ['required', 'string', 'email', 'max:255', 'exists:password_resets'],
+        $validator = Validator::make($request->only(['token', 'password', 'password_confirmation']), [
             'token' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:3', 'confirmed'],
         ], [
-            'email.required' => 'The email field is required.',
-            'email.string' => 'The email field must be string.',
-            'email.email' => 'Please enter a valid email address.',
-            'email.max' => 'Max email address length is 255 characters.',
-            'email.exists' => 'No password reset request found for this user.',
-
             'token.required' => 'The token field is required.',
             'token.string' => 'The token field must be string.',
             'token.max' => 'Max token length is 255 characters.',
@@ -277,7 +270,6 @@ class UserValidationService implements UserValidationServiceInterface
         $validatedData = $validator->validated();
 
         return [
-            'email' => $validatedData['email'],
             'token' => $validatedData['token'],
             'password' => $validatedData['password'],
         ];

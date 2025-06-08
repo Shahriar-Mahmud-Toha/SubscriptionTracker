@@ -282,28 +282,25 @@ class AuthService implements AuthServiceInterface
 
         return DB::transaction(function () use ($email) {
             $token = Str::random(64);
-            $this->authRepository->storeOrUpdateToken($email, Hash::make($token), 1);
+            $this->authRepository->storeOrUpdateToken($email, $token, 1);
 
             Mail::send('emails.password_reset', ['token' => $token], function ($message) use ($email) {
                 $message->to($email);
                 $message->subject('Reset Password Notification');
-            });
+            }); 
 
             return true;
         });
     }
-    public function resetPassword(string $email, string $token, string $password): int
+    public function resetPassword(string $token, string $password): int
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-        return DB::transaction(function () use ($email, $token, $password) {
-            $data = $this->authRepository->findTokenByEmail($email);
+        return DB::transaction(function () use ($token, $password) {
+            $data = $this->authRepository->getTokenData($token);
             if (!$data) {
-                return 0; // No password reset request found for this user.
-            }
-            if (!Hash::check($token, $data->token)) {
                 return -1; // Invalid token.
             }
-            $authData = $this->authRepository->findAuthDataByEmail($email);
+            $authData = $this->authRepository->findAuthDataByEmail($data->email);
             if (!$authData) {
                 return 0; // No user found.
             }
@@ -314,7 +311,7 @@ class AuthService implements AuthServiceInterface
                 throw new \Exception("Failed to update password."); // Force rollback
             }
 
-            if (!$this->authRepository->deleteTokenByEmail($email)) {
+            if (!$this->authRepository->deleteTokenByEmail($data->email)) {
                 throw new \Exception("Failed to delete reset token."); // Force rollback
             }
 

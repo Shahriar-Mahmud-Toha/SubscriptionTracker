@@ -20,7 +20,7 @@ interface AuthServiceInterface
     public function updatePassword(int $authId, string $password): bool;
     
     public function forgotPassword(string $email): bool;
-    public function resetPassword(string $email, string $token, string $password): int;
+    public function resetPassword(string $token, string $password): int;
 
     public function getUsersStatistics();
 }
