@@ -1,12 +1,34 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getAuthToken, logout } from "@/features/auth/actions";
+import { startTransition, useEffect, useState } from "react";
+import { delay } from "@/utils/timing";
+import ToastPromiseGeneral from "@/components/toasts/toast-promise-general";
 
 export default function HeaderAction({ customClasses }: { customClasses: string }) {
     const pathname = usePathname();
     const isDashboard = pathname === "/dashboard";
     const isProfile = pathname === "/profile";
+    const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogout = async () => {
+        setIsLoading(true);
+        try {
+            console.log("clicked");
+            await ToastPromiseGeneral({
+                promise: logout(),
+                loadingMessage: 'Logging Out...',
+                successMessage: 'Logged Out Successfully',
+                errorMessage: 'Failed to Log Out',
+            });
+            router.replace('/login');
+        } catch (error) {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className={`flex gap-10 ${customClasses}`}>
@@ -46,7 +68,11 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
                     />
                 )}
             </Link>
-            <Link href="/logout" className="group">
+            <button
+                onClick={handleLogout}
+                className="group relative enabled:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
+            >
                 <Image
                     src="/assets/icons/logout-regular.svg"
                     className="w-6 h-6 block group-hover:scale-130 transition-all duration-300 group-hover:hidden"
@@ -61,7 +87,7 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
                     height={24}
                     alt="Logout"
                 />
-            </Link>
+            </button>
         </div>
     );
 }

@@ -3,30 +3,27 @@
 import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
-import { delay } from '@/utils/timing';
 import { LoginFormData } from '@/features/auth/types';
 import { useRouter } from 'next/navigation';
+import { login } from '@/features/auth/actions';
+import ToastGeneralError from '@/components/toasts/toast-general-error';
 
 export default function LoginForm({ customClass }: { customClass?: string }) {
     const router = useRouter();
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors, isSubmitting, isSubmitSuccessful },
     } = useForm<LoginFormData>({
         mode: "onBlur",
     });
 
     const onSubmit = async (data: LoginFormData) => {
-        try {
-            // Simulate API call delay
-            console.log(data);
-            // TODO: Implement your login logic here
-            await delay(2000); // 2 seconds delay
-
-            router.push('/signup'); //temporary
-        } catch (error) {
-            console.error('Login failed:', error);
+        const response = await login(data);
+        if (!response.error) {
+            router.replace('/dashboard')
+        } else {
+            ToastGeneralError(response.error);
         }
     };
 
@@ -65,7 +62,7 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
                     }}
                 />
 
-                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Logging in..." text="Login" customClasses="" />
+                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Logging in..." text="Login" customClasses="" disabledOnSubmit={isSubmitSuccessful} />
             </form>
         </div>
     );

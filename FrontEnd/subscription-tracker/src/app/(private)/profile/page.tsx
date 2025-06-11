@@ -15,9 +15,14 @@ import { PasswordUpdateContextProvider } from "@/features/profile/contexts/passw
 import PasswordUpdateEditButton from "@/features/profile/components/password-update/password-update-edit-button";
 import PasswordUpdateBackButton from '@/features/profile/components/password-update/password-update-back-button';
 import PasswordUpdateController from "@/features/profile/components/password-update/password-update-controller";
+import { getAuthToken } from "@/features/auth/actions";
+import { redirect } from "next/navigation";
 
-export default function Profile() {
-
+export default async function Profile() {
+    const { error } = await getAuthToken();
+    if (error) {
+        redirect("/login");
+    }
     return (
         <div className="flex flex-col items-center mb-20">
             <PageTitle title="Profile" />

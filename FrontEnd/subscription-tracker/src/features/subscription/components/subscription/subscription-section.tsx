@@ -1,17 +1,20 @@
+import { redirect } from "next/navigation";
 import { fetchSubscriptions } from "@/features/subscription/actions";
 import SubscriptionController from "@/features/subscription/components/subscription/subscription-controller";
 
 export default async function SubscriptionSection() {
     const response = await fetchSubscriptions();
-
+    if (response?.status === 401 && response.error) {
+        redirect("/login");
+    }
     if (response.error) {
         return (
-            <div className="text-red-500 p-4 text-center">
+            <p className="text-red-general text-center">
                 {response.error}
-            </div>
+            </p>
         );
     }
-    if (!response.data) {
+    if (!response.data || response.data.length === 0) {
         return (
             <SubscriptionController initialData={[]} />
         );

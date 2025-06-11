@@ -1,5 +1,5 @@
 import { validateSignupVerifyEmailParams } from '@/utils/validator';
-import { verifySignupEmail } from '@/features/subscription/actions';
+import { verifySignupEmail } from '@/features/auth/actions';
 
 
 export default async function VerifyEmailPage({ searchParams }: { searchParams: Promise<{ expires?: string, hash?: string, id?: string, signature?: string }> }) {

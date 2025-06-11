@@ -5,9 +5,14 @@ import { SubscriptionProvider } from "@/features/subscription/contexts/subscript
 import { Suspense } from "react";
 import SubscriptionLoader from "@/features/subscription/components/subscription/subscription-loader";
 import SubscriptionAddButton from "@/features/subscription/components/subscription/subscription-add-button";
+import { getAuthToken } from "@/features/auth/actions";
+import { redirect } from "next/navigation";
 
-
-export default function Dashboard() {
+export default async function Dashboard() {
+    const { error } = await getAuthToken();
+    if (error) {
+        redirect("/login");
+    }
     return (
         <div className="flex flex-col items-center mb-20">
             <PageTitle title="Dashboard" />

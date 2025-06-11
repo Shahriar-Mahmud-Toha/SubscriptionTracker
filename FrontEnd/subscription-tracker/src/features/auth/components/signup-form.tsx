@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
 import { SignupFormData } from '@/features/auth/types';
-import { resendVerificationLink, signup } from '@/features/subscription/actions';
+import { resendVerificationLink, signup } from '@/features/auth/actions';
 import ToastGeneralError from '@/components/toasts/toast-general-error';
 import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
 
@@ -142,7 +142,7 @@ export default function SignupForm({ customClass }: { customClass?: string }) {
                     }}
                 />
 
-                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Creating Account..." text="Sign Up" customClasses="" />
+                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Creating Account..." text="Sign Up" customClasses="" disabledOnSubmit={isSubmitSuccessful} />
                 {(resendVerificationEmail || cooldownTime > 0) && resendAttempts < MAX_RESEND_ATTEMPTS && (
                     <div className="flex flex-col items-center justify-center">
                         <button

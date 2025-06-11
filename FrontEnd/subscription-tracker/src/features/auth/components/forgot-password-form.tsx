@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
 import { ForgotPasswordFormData } from '@/features/auth/types';
-import { forgotPassword } from '@/features/subscription/actions';
+import { forgotPassword } from '@/features/auth/actions';
 import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
 import ToastGeneralError from '@/components/toasts/toast-general-error';
 

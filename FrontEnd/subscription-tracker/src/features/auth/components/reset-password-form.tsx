@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import FormInput from '@/components/forms/form-input';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import { ResetPasswordFormData } from '@/features/auth/types';
-import { resetPassword } from '@/features/subscription/actions';
+import { resetPassword } from '@/features/auth/actions';
 import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
 import ToastGeneralError from '@/components/toasts/toast-general-error';
 
