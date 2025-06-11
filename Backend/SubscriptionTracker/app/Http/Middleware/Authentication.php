@@ -2,28 +2,32 @@
 
 namespace App\Http\Middleware;
 
+use App\Constants\TokenConstants;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redis;
 use Symfony\Component\HttpFoundation\Response;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Auth\GenericUser;
 
 class Authentication
 {
-    private int $accessTokenValidity = 50;
-    
     public function handle(Request $request, Closure $next): Response
     {
         try {
             $data = $this->validateToken($request);
-            $this->checkBannedToken($data['payload']);
+            $this->checkAllowedToken($data['payload']);
             $this->validateRefreshToken($request, $data['payload']);
-            $user = JWTAuth::authenticate();
-            if (!$user->email_verified_at) {
-                throw new \Exception('Account is inactive. Access denied.', 403);
-            }
-            Auth::setUser($user); // Setting the authenticated user in the request context
+            // $user = JWTAuth::authenticate();
+            // if (!$user->email_verified_at) {
+            //     throw new \Exception('Account is inactive. Access denied.', 403);
+            // }
+            $user = new GenericUser([
+                'id' => $data['payload']['sub'],
+                'role' => $data['payload']['role'],
+            ]);
+            Auth::setUser($user);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -54,7 +58,7 @@ class Authentication
             JWTAuth::parseToken();
             $payload = JWTAuth::getPayload();
         } catch (\Exception $e) {
-            throw new \Exception('This token is Invalid or Expired.');
+            throw new \Exception('This token is Invalid or Expired.', 401);
         }
 
         return [
@@ -69,27 +73,35 @@ class Authentication
      * @param  string $token
      * @throws \Exception
      */
-    protected function checkBannedToken($payload): void
+    protected function checkAllowedToken($payload): void
     {
-        $jti = $payload->get('jti');
+        if ($payload->get('type') !== 'refresh') {
+            return; // Only check refresh tokens for banning
+        }
 
-        // Check Redis for banned token
-        $bannedToken = Redis::get("banned_token:{$jti}");
-        if ($bannedToken) {
-            throw new \Exception('This token has been restricted.');
+        $jti = $payload->get('jti');
+        $sub = $payload->get('sub');
+
+        $allowedToken = Redis::get("allowed_refresh_token:{$jti}");
+        $bannedUser = Redis::get("banned_user:{$sub}");
+        if (!$allowedToken) {
+            throw new \Exception('This token is not allowed.');
+        }
+        if ($bannedUser) {
+            throw new \Exception('This user is suspended.');
         }
     }
     protected function validateRefreshToken(Request $request, $payload): void
     {
         $type = $payload->get('type');
         $issuedAt = $payload->get('iat');
-        // Check if the route matches "api/refresh_token"
+
         if ($request->is('api/refresh_token')) {
             if ($type === 'access') {
                 throw new \Exception('Refresh token cannot be generated with an access token.');
             }
 
-            $accessTokenValidity = $issuedAt + ($this->accessTokenValidity * 60); 
+            $accessTokenValidity = $issuedAt + ((TokenConstants::ACCESS_TOKEN_VALIDITY * 60) - (TokenConstants::TOKEN_EXPIRE_BUFFER + 2));
             if (time() < $accessTokenValidity) {
                 throw new \Exception('Token cannot be refreshed until existing token is valid.');
             }

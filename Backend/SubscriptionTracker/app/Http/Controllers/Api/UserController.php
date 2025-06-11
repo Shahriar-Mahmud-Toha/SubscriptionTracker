@@ -33,7 +33,7 @@ class UserController extends Controller
     public function create(Request $request): JsonResponse
     {
         try {
-            $authId = Auth::user()->id;
+            $authId = Auth::id();
             $user = $this->userService->getUserByAuthId($authId);
             if ($user != null) {
                 return $this->update($request);
@@ -70,7 +70,7 @@ class UserController extends Controller
     public function update(Request $request): JsonResponse
     {
         try {
-            $user = $this->userService->getUserByAuthId(Auth::user()->id);
+            $user = $this->userService->getUserByAuthId(Auth::id());
             if ($user == null) {
                 return $this->create($request);
             }

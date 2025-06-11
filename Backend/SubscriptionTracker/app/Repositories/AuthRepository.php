@@ -87,6 +87,10 @@ class AuthRepository implements AuthRepositoryInterface
     {
         return $apiSession->delete();
     }
+    public function deleteApiSessionById(string $id): bool
+    {
+        return ApiSession::where('id', $id)->delete() > 0;
+    }
     public function getUsersStatistics() //No need transactions
     {
         return "This feature is under development";

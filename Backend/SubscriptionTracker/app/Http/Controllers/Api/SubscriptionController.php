@@ -44,7 +44,7 @@ class SubscriptionController extends Controller
                 $data->file_name = basename($request->file('file')->store('subscriptions'));
             }
             
-            return response()->json($this->subscriptionService->storeSubscription($data, Auth::user()->id), 201);
+            return response()->json($this->subscriptionService->storeSubscription($data, Auth::id()), 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -53,7 +53,7 @@ class SubscriptionController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $data = $this->subscriptionService->getUsersSubscriptionById($id, Auth::user()->id);
+            $data = $this->subscriptionService->getUsersSubscriptionById($id, Auth::id());
             if ($data == null) {
                 return response()->json(['message' => 'Subscription Not found for this user.'], 404);
             }
@@ -70,7 +70,7 @@ class SubscriptionController extends Controller
             if (!$keyword) {
                 return response()->json(['message' => 'Search keyword is required'], 400);
             }
-            $data = $this->subscriptionService->searchSubscriptions($keyword, Auth::user()->id);
+            $data = $this->subscriptionService->searchSubscriptions($keyword, Auth::id());
             if ($data == null) {
                 return response()->json(['message' => 'No result found.'], 404);
             }
@@ -82,7 +82,7 @@ class SubscriptionController extends Controller
     public function showAllSubscriptionForThisUser(): JsonResponse
     {
         try {
-            $data = $this->subscriptionService->showUsersAllSubscriptions(Auth::user()->id);
+            $data = $this->subscriptionService->showUsersAllSubscriptions(Auth::id());
             if ($data == null) {
                 return response()->json(['message' => 'Subscription Not found for this user.'], 404);
             }
@@ -101,7 +101,7 @@ class SubscriptionController extends Controller
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
-            if ($this->subscriptionService->updateSubscription($data, $id, Auth::user()->id)) {
+            if ($this->subscriptionService->updateSubscription($data, $id, Auth::id())) {
                 return response()->json(['message' => 'Subscription data Updated successfully'], 200);
             }
             return response()->json(['message' => 'Subscription data NOT Updated'], 500);
@@ -121,7 +121,7 @@ class SubscriptionController extends Controller
             if ($request->hasFile('file')) {
                 $fileName = basename($request->file('file')->store('subscriptions'));
             }
-            if ($this->subscriptionService->updateSubscriptionsFile($id, Auth::user()->id, $fileName)) {
+            if ($this->subscriptionService->updateSubscriptionsFile($id, Auth::id(), $fileName)) {
                 return response()->json(['message' => 'This Subscription\'s file updated successfully'], 200);
             }
             return response()->json(['message' => 'Subscription data NOT Updated'], 500);
@@ -133,7 +133,7 @@ class SubscriptionController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-            $data = $this->subscriptionService->deleteUsersSubscription($id, Auth::user()->id);
+            $data = $this->subscriptionService->deleteUsersSubscription($id, Auth::id());
             if (!$data) {
                 return response()->json(['message' => "No valid subscription data found"], 404);
             }

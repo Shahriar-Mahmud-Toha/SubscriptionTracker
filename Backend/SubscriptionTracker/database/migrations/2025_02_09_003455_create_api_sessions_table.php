@@ -15,12 +15,8 @@ return new class extends Migration
             $table->id();
             // $table->foreign('auth_id', 'fk_api_sessions_auth_id')->references('id')->on('authentications')->onDelete('cascade')->index();
             $table->unsignedBigInteger('auth_id')->index();
-            $table->text('access_token');
-            $table->text('refresh_token');
             $table->string('ip_address', 45)->nullable();  // IP address of the device (IPv6 compatible)
-            $table->text('user_agent')->nullable();
-            $table->string('device_name')->nullable();
-            $table->timestamp('expires_at')->nullable();
+            $table->text('device_info')->nullable();
             $table->timestamps();
 
             $table->foreign('auth_id', 'fk_api_sessions_auth_id')->references('id')->on('authentications')->onDelete('cascade');

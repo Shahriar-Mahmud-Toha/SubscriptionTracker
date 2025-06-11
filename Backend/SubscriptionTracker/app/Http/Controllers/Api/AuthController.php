@@ -108,15 +108,18 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+            $reqData = $this->userValidationService->validateUserRequestHeader($request);
+            if (is_array($reqData) && !$reqData['success']) {
+                return response()->json(["message" => $reqData['errors']], 400);
+            }
             $data = new AuthenticationDTO();
             $data = $this->userValidationService->validateUserLogin($request);
             if (is_array($data) && !$data['success']) {
-                return response()->json($data['errors'], 400);
+                return response()->json(["message" => $data['errors']], 400);
             }
             $sessionData = [
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-                'device_name' => $request->header('Device-Name', 'Unknown Device'),
+                'ip_address' => $request->header('X-Client-IP'),
+                'device_info' => $request->header('X-Device-Info'),
             ];
             $tokens = $this->authService->loginUser($data, $sessionData);
             if ($tokens <= 0) {
@@ -132,7 +135,8 @@ class AuthController extends Controller
     public function me()
     {
         try {
-            return response()->json(['user' => Auth::user(), 'current_token' => JWTAuth::getToken()->get()], 200);
+            $authData = $this->authService->findAuthUserDetailsById(Auth::id());
+            return response()->json(['user' => $authData, 'current_token' => JWTAuth::getToken()->get()], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -154,42 +158,37 @@ class AuthController extends Controller
     public function logout()
     {
         try {
-            $result = $this->authService->logout(JWTAuth::getToken(), Auth::user());
+            $authData = $this->authService->findAuthDataById(Auth::id());
+            if (!$authData->email_verified_at) {
+                return response()->json(['error' => 'Account is inactive. Access denied.'], 403);
+            }
+            $result = $this->authService->logout(JWTAuth::getToken());
             //also true for access token.
+            if ($result === 1) {
+                return response()->json(['message' => 'Logout Successful'], 200);
+            }
             if ($result === -1) {
-                return response()->json(['error' => 'This token Not Found in System'], 401);
+                return response()->json(['error' => 'Session Not Found in System'], 500);
             }
-            if ($result === -2) {
-                return response()->json(['error' => 'Token invalidation failed.'], 500);
-            }
-            if ($result == 0) {
-                return response()->json(['error' => 'Session Not Deleted. Logout Unsuccessful'], 500);
-            }
-
-            return response()->json(['message' => 'Logout Successful'], 200);
+            return response()->json(['error' => 'Token invalidation failed.'], 500);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
     }
-    public function refresh(Request $request)
+    public function refresh()
     {
         try {
-            $sessionData = [
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->header('User-Agent'),
-                'device_name' => $request->header('Device-Name', 'Unknown Device'),
-            ];
-            $tokens = $this->authService->refreshToken(JWTAuth::getToken(), Auth::user(), $sessionData);
-
-            //also true for access token.
-            if ($tokens === -1) {
-                return response()->json(['error' => 'This refresh token Not Found in System'], 401);
+            $authData = $this->authService->findAuthDataById(Auth::id());
+            if (!$authData->email_verified_at) {
+                return response()->json(['error' => 'Account is inactive. Access denied.'], 403);
             }
-            if ($tokens === -2) {
+            $tokens = $this->authService->refreshToken(JWTAuth::getToken(), $authData);
+
+            if ($tokens === -1) {
                 return response()->json(['error' => 'Token invalidation failed.'], 500);
             }
-            if ($tokens === -3) {
-                return response()->json(['error' => 'Session update failed.'], 500);
+            if ($tokens === -2) {
+                return response()->json(['error' => 'Failed to add token in allowed list.'], 500);
             }
 
             return response()->json(['tokens' => $tokens, 'message' => 'Token Refresh Successful'], 201);
@@ -212,7 +211,8 @@ class AuthController extends Controller
             if (is_array($email) && !$email['success']) {
                 return response()->json($email['errors'], 400);
             }
-            if ($this->authService->updateEmail(Auth::user()->id, $email)) {
+
+            if ($this->authService->updateEmail(Auth::id(), $email)) {
                 return response()->json(['message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
             }
             return response()->json(["message" => "Operation Failed"], 500);
@@ -223,7 +223,7 @@ class AuthController extends Controller
     public function updatePassword(Request $request): JsonResponse
     {
         try {
-            $authId = Auth::user()->id;
+            $authId = Auth::id();
             $password = $this->userValidationService->validateUserPasswordUpdate($request, $authId);
             if (is_array($password) && !$password['success']) {
                 return response()->json($password['errors'], 400);

@@ -24,12 +24,24 @@ class ApiSessionFactory extends Factory
     {
         return [
             'auth_id' => Authentication::factory(),
-            'access_token' => Crypt::encryptString(Str::random(60)), // Encrypt access token
-            'refresh_token' => Crypt::encryptString(Str::random(60)), // Encrypt refresh token
+            // 'refresh_token' => Crypt::encryptString(Str::random(60)), 
             'ip_address' => $this->faker->ipv4,
-            'user_agent' => $this->faker->userAgent,
-            'device_name' => $this->faker->word,
-            'expires_at' => now()->addDays(7), // Expires in 7 days
+            'device_info' => $this->generateSimpleDeviceInfo(),
         ];
+    }
+    protected function generateSimpleDeviceInfo(): string
+    {
+        $operatingSystems = ['Windows', 'macOS', 'Linux', 'iOS', 'Android'];
+        $browsers = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'];
+        
+        $os = $this->faker->randomElement($operatingSystems);
+        $browser = $this->faker->randomElement($browsers);
+        
+        if (in_array($os, ['iOS', 'Android'])) {
+            $osVersion = $this->faker->numberBetween(8, 16);
+            $os .= " {$osVersion}";
+        }
+        
+        return "{$os} {$browser}";
     }
 }

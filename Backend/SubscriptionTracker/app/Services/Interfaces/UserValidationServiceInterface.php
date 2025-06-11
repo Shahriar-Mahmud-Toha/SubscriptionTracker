@@ -8,6 +8,7 @@ use App\DTO\UserDTO; // Import the UserDTO class
 interface UserValidationServiceInterface
 {
     public function validateUserSignup(Request $request);
+    public function validateUserRequestHeader(Request $request): array;
     public function validateUserLogin(Request $request);
     public function validateUser(Request $request, int $auth_id);
     public function validateUserEmailUpdate(Request $request);

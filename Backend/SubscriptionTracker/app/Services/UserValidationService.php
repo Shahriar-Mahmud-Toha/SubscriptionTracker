@@ -59,6 +59,20 @@ class UserValidationService implements UserValidationServiceInterface
 
         return $authenticationDTO;
     }
+    public function validateUserRequestHeader(Request $request): array
+    {
+        $clientIp = $request->header('X-Client-IP');
+        $deviceInfo = $request->header('X-Device-Info');
+        if (!$clientIp || !$deviceInfo || !filter_var($clientIp, FILTER_VALIDATE_IP) || !preg_match('/^[a-zA-Z0-9\s\.\,\-\_\(\)]+$/', $deviceInfo)) {
+            return [
+                'success' => false,
+                'errors' => "Device information or IP address is missing or invalid.",
+            ];
+        }
+        return [
+            'success' => true,
+        ];
+    }
     public function validateUserLogin(Request $request)
     {
         $validator = Validator::make($request->only(['email', 'password']), [
@@ -185,7 +199,6 @@ class UserValidationService implements UserValidationServiceInterface
             }
 
             return $userId;
-
         } catch (\Exception $e) {
             return [
                 'success' => false,
