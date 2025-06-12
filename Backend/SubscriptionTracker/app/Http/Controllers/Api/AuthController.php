@@ -80,7 +80,8 @@ class AuthController extends Controller
             if ($user->email_verified_at) {
                 return response()->json(['message' => 'Email already verified. You can login!'], 200);
             }
-            $this->authService->sendVerificationEmail($user);
+            $urls= $this->authService->generateVerificationUrls($user);
+            $this->authService->sendVerificationEmail($user, $urls);
             return response()->json(['message' => 'Verification link sent!'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
@@ -213,9 +214,34 @@ class AuthController extends Controller
             }
 
             if ($this->authService->updateEmail(Auth::id(), $email)) {
-                return response()->json(['message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 201);
+                return response()->json(['message' => 'An email verification link has been sent to your email. Please check your inbox and click the link to verify your account.'], 200);
             }
             return response()->json(["message" => "Operation Failed"], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
+        }
+    }
+    public function verifyEmailUpdate(Request $request): JsonResponse
+    {
+        try {
+            $id = $request->query('id');
+            $hash = $request->query('hash');
+            if (!$id) {
+                return response()->json(['message' => 'Invalid verification link: missing user ID'], 400);
+            }
+            $user = $this->authService->findAuthDataById((int)$id);
+            if (!$user) {
+                return response()->json(['message' => 'No Valid user found.'], 400);
+            }
+            if (!hash_equals(sha1($user->email), $hash)) {
+                return response()->json(['message' => 'Invalid verification link'], 403);
+            }
+            $result = $this->authService->verifyEmailUpdate($user, $hash);
+            if (!$result) {
+                return response()->json(['message' => 'Email verification failed.'], 500);
+            }
+
+            return response()->json(['message' => 'Email successfully verified and Updated.'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }

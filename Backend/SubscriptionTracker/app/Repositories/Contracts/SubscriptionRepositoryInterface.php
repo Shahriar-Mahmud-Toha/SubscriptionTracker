@@ -10,6 +10,7 @@ interface SubscriptionRepositoryInterface
 {
     public function getAllUsersSubscriptions(): Collection;
     public function showUsersAllSubscriptions(int $authId): EloquentCollection|null;
+    public function showUsersAllSubscriptionsDescOrder(int $authId): EloquentCollection|null;
     public function getUsersSubscriptionById(int $subsId, int $authId): Subscription|null;
     public function getSubscriptionById(int $subsId): Subscription|null;
     public function storeSubscription(array $subsData): Subscription|null;

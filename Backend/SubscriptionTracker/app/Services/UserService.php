@@ -19,7 +19,7 @@ class UserService implements UserServiceInterface
 
     public function createUser(UserDTO $userDTO)
     {
-        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READD');
+        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         return DB::transaction(function () use ($userDTO) {
             return $this->userRepository->createUser($userDTO->toArray());
         });

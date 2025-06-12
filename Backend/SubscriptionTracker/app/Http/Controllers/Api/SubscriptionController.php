@@ -137,7 +137,7 @@ class SubscriptionController extends Controller
             if (!$data) {
                 return response()->json(['message' => "No valid subscription data found"], 404);
             }
-            return response()->json(['message' => 'User deleted successfully'], 200);
+            return response()->json(['message' => 'Subscription deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }

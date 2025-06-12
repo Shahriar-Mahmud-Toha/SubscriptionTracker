@@ -32,7 +32,7 @@ class SubscriptionService implements SubscriptionServiceInterface
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
         return DB::transaction(function () use ($authId) {
-            return $this->subscriptionRepository->showUsersAllSubscriptions($authId);
+            return $this->subscriptionRepository->showUsersAllSubscriptionsDescOrder($authId);
         });
     }
     public function getUsersSubscriptionById(int $subsId, int $authId): Subscription|null

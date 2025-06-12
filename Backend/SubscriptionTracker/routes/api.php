@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('user/signup', [AuthController::class, 'signupUser']);
+Route::get('user/update/verify-email', [AuthController::class, 'verifyEmailUpdate'])->middleware(['signed', 'EmailUpdateVerification'])->name('updateEmail.verify');
 Route::get('user/signup/verify-email', [AuthController::class, 'verifyEmail'])->middleware(['signed', 'throttle:client'])->name('verification.verify');
 Route::post('user/signup/reverifyEmail', [AuthController::class, 'reVerifyEmail'])->middleware(['throttle:client'])->name('verification.send'); //throttle:3,1 => max 3 request in 1 min.
 Route::post('user/password/forgot', [AuthController::class, 'forgotPassword'])->middleware(['throttle:client'])->name('forgot.password');

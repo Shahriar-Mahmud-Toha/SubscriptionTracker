@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Redis;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Token;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Type\Time;
 
 class AuthService implements AuthServiceInterface
 {
@@ -37,9 +38,10 @@ class AuthService implements AuthServiceInterface
             $token = JWTAuth::customClaims([
                 'role' => $data->role,
                 'type' => 'signup',
-                'exp' => Carbon::now()->addMinutes(60)->timestamp
+                'exp' => Carbon::now()->addMinutes(TokenConstants::SIGNUP_EMAIL_TOKEN_VALIDITY)->timestamp
             ])->fromUser($data);
-            $this->sendVerificationEmail($data);
+            $urls = $this->generateVerificationUrls($data);
+            $this->sendVerificationEmail($data, $urls);
             return $token;
         });
     }
@@ -47,7 +49,7 @@ class AuthService implements AuthServiceInterface
     public function generateVerificationUrls($user)
     {
         $hash = sha1($user->email);
-        $expiration = now()->addMinutes(60);
+        $expiration = now()->addMinutes(TokenConstants::EMAIL_VERIFICATION_TOKEN_VALIDITY);
         $signedUrl = url()->temporarySignedRoute('verification.verify', $expiration, ['id' => $user->id, 'hash' => $hash]);
         $parsed = parse_url($signedUrl);
         $queryParams = [];
@@ -61,9 +63,8 @@ class AuthService implements AuthServiceInterface
         ];
     }
 
-    public function sendVerificationEmail($user)
+    public function sendVerificationEmail($user, $urls)
     {
-        $urls = $this->generateVerificationUrls($user);
         $frontendUrl = $urls['frontend_url'];
         $user->notify(new CustomVerifyEmail($frontendUrl));
     }
@@ -189,38 +190,109 @@ class AuthService implements AuthServiceInterface
             return $this->authRepository->findAuthUserDetailsById($auth_id);
         });
     }
-
+    public function generateUpdateEmailVerificationUrls($user)
+    {
+        $hash = sha1($user->email);
+        $expiration = now()->addMinutes(TokenConstants::EMAIL_VERIFICATION_TOKEN_VALIDITY);
+        $signedUrl = url()->temporarySignedRoute('updateEmail.verify', $expiration, ['id' => $user->id, 'hash' => $hash]);
+        $parsed = parse_url($signedUrl);
+        $queryParams = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $queryParams);
+        }
+        $frontendUrl = env('FRONT_END_URL') . '/verify-update-email?' . http_build_query($queryParams + [
+            'hash' => $hash,
+            'type' => 'update'
+        ]);
+        return [
+            'signed_url' => $signedUrl,
+            'frontend_url' => $frontendUrl,
+            'signed_hash' => $hash  // Added this line
+        ];
+    }
     public function updateEmail(int $authId, string $email): bool
     {
-        DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        try {
+            DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
 
-        return DB::transaction(function () use ($authId, $email) {
-            $currData = $this->authRepository->findAuthDataById($authId);
-            if (!$currData) {
-                return false; // Auth data not found for this user
-            }
+            return DB::transaction(function () use ($authId, $email) {
+                $currData = $this->authRepository->findAuthDataById($authId);
+                if (!$currData) {
+                    return false; // Auth data not found for this user
+                }
+                $urls = $this->generateUpdateEmailVerificationUrls($currData);
+                $currData['email'] = $email;
+                $result = Redis::setex("updated_email:{$urls['signed_hash']}", TokenConstants::EMAIL_VERIFICATION_TOKEN_VALIDITY * 60, $email);
+                if (!$result) {
+                    return false;
+                }
+                $this->sendVerificationEmail($currData, $urls);
 
-            $updatedData = [
-                'email' => $email,
-                'email_verified_at' => null
-            ];
-
-            if (!$this->authRepository->updateAuthData($currData, $updatedData)) {
-                return false;
-            }
-
-            $currData->email = $email;
-            $currData->email_verified_at = null;
-
-            try {
-                $currData->sendEmailVerificationNotification();
-            } catch (\Throwable $e) {
-                throw new \Exception("Failed to send verification email: " . $e->getMessage());
-            }
-
-            return true;
-        });
+                return true;
+            });
+        } catch (\Exception $e) {
+            return false;
+        }
     }
+    public function verifyEmailUpdate(Authentication $user, string $hash): bool
+    {
+        try {
+            DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+            return DB::transaction(function () use ($user, $hash) {
+                $newEmail = Redis::get("updated_email:{$hash}");
+                if (!$newEmail) {
+                    return false; // No email found for this hash
+                }
+
+                $updatedData = [
+                    'email' => $newEmail,
+                    'email_verified_at' => now(),
+                ];
+
+                if (!$this->authRepository->updateAuthData($user, $updatedData)) {
+                    return false;
+                }
+
+                Redis::del("updated_email:{$hash}");
+
+                return true;
+            });
+        } catch (\Exception $e) {
+            return false; // Handle exception as needed
+        }
+    }
+    // public function updateEmail(int $authId, string $email): bool
+    // {
+    //     DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+    //     return DB::transaction(function () use ($authId, $email) {
+    //         $currData = $this->authRepository->findAuthDataById($authId);
+    //         if (!$currData) {
+    //             return false; // Auth data not found for this user
+    //         }
+
+    //         $updatedData = [
+    //             'email' => $email,
+    //             'email_verified_at' => null
+    //         ];
+
+    //         if (!$this->authRepository->updateAuthData($currData, $updatedData)) {
+    //             return false;
+    //         }
+
+    //         $currData->email = $email;
+    //         $currData->email_verified_at = null;
+
+    //         try {
+    //             $currData->sendEmailVerificationNotification();
+    //         } catch (\Throwable $e) {
+    //             throw new \Exception("Failed to send verification email: " . $e->getMessage());
+    //         }
+
+    //         return true;
+    //     });
+    // }
     public function updatePassword(int $authId, string $password): bool
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');

@@ -9,7 +9,8 @@ use App\Models\Authentication;
 interface AuthServiceInterface
 {
     public function signup(AuthenticationDTO $authData);
-    public function sendVerificationEmail($user);
+    public function sendVerificationEmail($user, $urls);
+    public function generateVerificationUrls($user);
     public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null;
     public function refreshToken(string $refreshToken, Authentication $authData): array|int;
     public function logout(string $accessToken): int;
@@ -18,6 +19,7 @@ interface AuthServiceInterface
     public function findAuthDataById(string $id): Authentication|null;
     public function findAuthUserDetailsById(int $auth_id);
     public function updateEmail(int $authId, string $email): bool;
+    public function verifyEmailUpdate(Authentication $user, string $hash): bool;
     public function updatePassword(int $authId, string $password): bool;
     
     public function forgotPassword(string $email): bool;

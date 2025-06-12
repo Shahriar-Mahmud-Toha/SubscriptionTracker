@@ -13,6 +13,12 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
     {
         return Subscription::where('auth_id', $authId)->get();
     }
+    public function showUsersAllSubscriptionsDescOrder(int $authId): EloquentCollection|null
+    {
+        return Subscription::where('auth_id', $authId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 
     public function getUsersSubscriptionById(int $subsId, int $authId): Subscription|null
     {
