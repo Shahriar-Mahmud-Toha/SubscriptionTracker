@@ -10,6 +10,7 @@ interface FormInputProps<TFormValues extends FieldValues> {
     label: string;
     type: string;
     placeholder?: string;
+    defaultValue?: string;
     register: UseFormRegister<TFormValues>;
     errors: FieldErrors<TFormValues>;
     validation?: RegisterOptions<TFormValues>;
@@ -22,6 +23,7 @@ export default function FormInput<TFormValues extends FieldValues>({
     label,
     type,
     placeholder,
+    defaultValue,
     register,
     errors,
     validation,
@@ -39,7 +41,7 @@ export default function FormInput<TFormValues extends FieldValues>({
                     {...register(id, validation)}
                     className={`w-full px-4 py-2 bg-secondary-background border rounded-lg outline-none focus:ring-2 focus:ring-custom-violet focus:border-transparent ${errors[id] ? 'border-red-500' : 'border-foreground'}`}
                 >
-                    <option value="">{placeholder}</option>
+                    <option value="">{defaultValue || placeholder}</option>
                     {options?.map((option) => (
                         <option key={option.value} value={option.value}>
                             {option.label}
@@ -53,6 +55,7 @@ export default function FormInput<TFormValues extends FieldValues>({
                     {...register(id, validation)}
                     className={`w-full px-4 py-2  border rounded-lg outline-none focus:ring-2 focus:ring-custom-violet focus:border-transparent ${errors[id] ? 'border-red-500' : 'border-foreground'}`}
                     placeholder={placeholder}
+                    defaultValue={defaultValue}
                 />
             )}
             {errors[id] && (

@@ -43,6 +43,7 @@ export default function GeneralInfoController({ initialData }: { initialData: Ge
             {isEditing && !backBtnClicked ? (
                 <GeneralInfoForm
                     handleUpdate={handleUpdateGeneralInfo}
+                    initialData={optimisticData}
                 />
             ) : (
                 <ShowGeneralInfo data={optimisticData} />

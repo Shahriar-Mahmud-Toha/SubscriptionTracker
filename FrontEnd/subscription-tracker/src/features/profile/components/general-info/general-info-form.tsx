@@ -7,9 +7,11 @@ import { GeneralInfoType } from '@/features/profile/types';
 
 export default function GeneralInfoForm({
     handleUpdate,
+    initialData,
     customClass = "" // provide default empty string
 }: {
     handleUpdate: (data: GeneralInfoType) => Promise<void>,
+    initialData: GeneralInfoType,
     customClass?: string
 }) {
     const {
@@ -30,17 +32,19 @@ export default function GeneralInfoForm({
                     label="First Name"
                     type="text"
                     placeholder="Enter your first name"
+                    defaultValue={initialData.first_name}
                     register={register}
                     errors={errors}
                     validation={{
-                        required: "The first name field is required.",
-                        pattern: {
-                            value: /^[a-zA-Z\s]*$/,
-                            message: "The first name must contain only letters and spaces.",
-                        },
-                        maxLength: {
-                            value: 255,
-                            message: "The first name may not be greater than 255 characters.",
+                        validate: (value: string) => {
+                            if (!value) return true;
+                            if (!/^[a-zA-Z\s]*$/.test(value)) {
+                                return "The first name must contain only letters and spaces.";
+                            }
+                            if (value.length > 255) {
+                                return "The first name may not be greater than 255 characters.";
+                            }
+                            return true;
                         },
                     }}
                 />
@@ -50,17 +54,19 @@ export default function GeneralInfoForm({
                     label="Last Name"
                     type="text"
                     placeholder="Enter your last name"
+                    defaultValue={initialData.last_name}
                     register={register}
                     errors={errors}
                     validation={{
-                        required: "The last name field is required.",
-                        pattern: {
-                            value: /^[a-zA-Z\s]*$/,
-                            message: "The last name must contain only letters and spaces.",
-                        },
-                        maxLength: {
-                            value: 255,
-                            message: "The last name may not be greater than 255 characters.",
+                        validate: (value: string) => {
+                            if (!value) return true;
+                            if (!/^[a-zA-Z\s]*$/.test(value)) {
+                                return "The last name must contain only letters and spaces.";
+                            }
+                            if (value.length > 255) {
+                                return "The last name may not be greater than 255 characters.";
+                            }
+                            return true;
                         },
                     }}
                 />
@@ -69,20 +75,21 @@ export default function GeneralInfoForm({
                     label="Date of Birth"
                     type="date"
                     placeholder="Enter your date of birth"
+                    defaultValue={initialData.dob}
                     register={register}
                     errors={errors}
                     validation={{
-                        required: "The date of birth field is required.",
-                        validate: {
-                            isValidDate: (value) => {
-                                const date = new Date(value);
-                                return !isNaN(date.getTime()) || "The date of birth must be a valid date.";
-                            },
-                            notFutureDate: (value) => {
-                                const date = new Date(value);
-                                return date <= new Date() || "The date of birth cannot be in the future.";
+                        validate: (value: string) => {
+                            if (!value) return true;
+                            const date = new Date(value);
+                            if (isNaN(date.getTime())) {
+                                return "The date of birth must be a valid date.";
                             }
-                        }
+                            if (date > new Date()) {
+                                return "The date of birth cannot be in the future.";
+                            }
+                            return true;
+                        },
                     }}
                 />
 

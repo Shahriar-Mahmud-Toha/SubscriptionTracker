@@ -13,7 +13,7 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting, isSubmitSuccessful },
+        formState: { errors, isSubmitting },
     } = useForm<LoginFormData>({
         mode: "onBlur",
     });
@@ -62,7 +62,7 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
                     }}
                 />
 
-                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Logging in..." text="Login" customClasses="" disabledOnSubmit={isSubmitSuccessful} />
+                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Logging in..." text="Login" customClasses="" />
             </form>
         </div>
     );

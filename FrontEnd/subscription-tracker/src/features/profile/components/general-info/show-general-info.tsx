@@ -9,15 +9,15 @@ export default function ShowGeneralInfo({ data, customClass }: { data: GeneralIn
             <div className="space-y-4">
                 <InfoField
                     label="First Name"
-                    value={data.first_name}
+                    value={data.first_name || 'Add First Name'}
                 />
                 <InfoField
                     label="Last Name"
-                    value={data.last_name}
+                    value={data.last_name || 'Add Last Name'}
                 />
                 <InfoField
                     label="Date of Birth"
-                    value={formatStringDateToReadable(data.dob)}
+                    value={data.dob ? formatStringDateToReadable(data.dob) : 'Add Date of Birth'}
                 />
             </div>
         </div>

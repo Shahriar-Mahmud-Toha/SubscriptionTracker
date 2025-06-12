@@ -5,7 +5,7 @@ import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
 import { EmailType} from '@/features/profile/types';
 
-export default function EmailUpdateForm({ handleUpdate, customClass = "" }: { handleUpdate: (data: EmailType) => Promise<void>, customClass?: string }) {
+export default function EmailUpdateForm({ handleUpdate, initialData, customClass = "" }: { handleUpdate: (data: EmailType) => Promise<void>, initialData: string, customClass?: string }) {
     const {
         register,
         handleSubmit,
@@ -22,6 +22,7 @@ export default function EmailUpdateForm({ handleUpdate, customClass = "" }: { ha
                     label="Email"
                     type="email"
                     placeholder="Enter your new email"
+                    defaultValue={initialData}
                     register={register}
                     errors={errors}
                     validation={{

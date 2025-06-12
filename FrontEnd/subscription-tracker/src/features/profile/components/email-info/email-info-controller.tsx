@@ -43,6 +43,7 @@ export default function EmailInfoController({ initialData }: { initialData: stri
             {isEditing && !backBtnClicked ? (
                 <EmailUpdateForm
                     handleUpdate={handleUpdateEmail}
+                    initialData={optimisticEmailData}
                 />
             ) : (
                 <ShowEmail email={optimisticEmailData} />

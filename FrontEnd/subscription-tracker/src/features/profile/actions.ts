@@ -1,54 +1,68 @@
 'use server';
-import {delay} from "@/utils/timing";
-import {UserProfileInfoType, GeneralInfoType, PasswordUpdateType} from "./types";
-import {revalidatePath} from "next/cache";
-import {isValidEmail} from "@/utils/validator";
-
-const mockProfiles: UserProfileInfoType[] = [
-    {
-        first_name: 'John',
-        last_name: 'Doe',
-        dob: '1990-01-01',
-        email: 'abc1@mail.com'
-    },
-    {
-        first_name: 'Jane',
-        last_name: 'Smith',
-        dob: '1988-05-15',
-        email: 'abc2@mail.com'
-    },
-    {
-        first_name: 'Michael1',
-        last_name: 'Johnson',
-        dob: '1995-11-30',
-        email: 'abc3@mail.com'
-    },
-    {
-        first_name: 'Sarah',
-        last_name: 'Williams',
-        dob: '1992-07-22',
-        email: 'abc4@mail.com'
-    }
-];
+import { GeneralInfoType, PasswordUpdateType } from "./types";
+import { revalidatePath } from "next/cache";
+import { getAuthToken } from "@/features/auth/actions";
+import { getClientIP, getDeviceInfo } from "@/actions";
 
 export async function fetchGeneralInfo() {
     try {
-        const randomIndex = Math.floor(Math.random() * mockProfiles.length);
-        const data = mockProfiles[randomIndex];
-        await delay(1000); // Simulating API call
-        return {data, error: null};
+        const { token, error } = await getAuthToken();
+        if (error) {
+            return { data: null, error: error };
+        }
+        const response = await fetch(`${process.env.BACKEND_URL}/profile`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (response.status === 200 && data.id) {
+            return { data: data.user, error: null };
+        }
+        if (response.status === 401 && data?.message) {
+            return { data: null, error: data.message, status: response.status };
+        }
+        return { data: null, error: `Failed to fetch profile - status: ${response.status}` };
     } catch (error) {
-        return {data: null, error: 'Failed to fetch profile information'};
+        return { data: null, error: 'Failed to fetch profile - internal server error' };
     }
 }
 
 export async function updateGeneralInfo(formData: GeneralInfoType) {
+    const filteredData: Partial<GeneralInfoType> = {};
+    Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+            filteredData[key as keyof GeneralInfoType] = value;
+        }
+    });
     try {
-        const data = JSON.stringify(formData);
-        await delay(10000); // Simulating API call
-        return {data: true, error: null};
+        const { token, error } = await getAuthToken();
+        if (error) {
+            return { data: null, error: error };
+        }
+        const response = await fetch(`${process.env.BACKEND_URL}/update`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(filteredData),
+        });
+        const data = await response.json();
+        if (response.status === 200 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 201 && data.id) {
+            return { data, error: null };
+        }
+        if (response.status === 401 && data?.message) {
+            return { data: null, error: data.message, status: response.status };
+        }
+        return { data: null, error: `Failed to update profile - status: ${response.status}` };
     } catch (error) {
-        return {error: 'Failed to update profile information'};
+        return { data: null, error: 'Failed to update profile information' };
     } finally {
         revalidatePath('/profile');
     }
@@ -56,33 +70,116 @@ export async function updateGeneralInfo(formData: GeneralInfoType) {
 
 export async function fetchEmail() {
     try {
-        const randomIndex = Math.floor(Math.random() * mockProfiles.length);
-        const profile = mockProfiles[randomIndex];
-        await delay(1000); // Simulating API call
-        return {data: profile.email, error: null};
+        const { token, error } = await getAuthToken();
+        if (error) {
+            return { data: null, error: error };
+        }
+        const response = await fetch(`${process.env.BACKEND_URL}/profile`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (response.status === 200 && data.id) {
+            return { data: data.email, error: null };
+        }
+        if (response.status === 401 && data?.message) {
+            return { data: null, error: data.message, status: response.status };
+        }
+        return { data: null, error: `Failed to fetch profile - status: ${response.status}` };
     } catch (error) {
-        return {data: null, error: 'Failed to fetch Email.'};
+        return { data: null, error: 'Failed to fetch profile - internal server error' };
     }
 }
 
 export async function updateEmail(email: string) {
     try {
-        const validatedEmail: string | null = isValidEmail(email) ? email : null;
-        await delay(2000); // Simulating API call
-        return {data: true, error: null};
+        const { token, error } = await getAuthToken();
+        if (error) {
+            return { data: null, error: error };
+        }
+        const response = await fetch(`${process.env.BACKEND_URL}/update/email`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ email: email }),
+        });
+        const data = await response.json();
+        if (response.status === 200 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 400) {
+            return { data: null, error: data };
+        }
+        if (response.status === 401 && data?.message) {
+            return { data: null, error: data.message, status: response.status };
+        }
+        return { data: null, error: `Failed to update Email - status: ${response.status}` };
     } catch (error) {
-        return {error: 'Failed to update Email.'};
-    } finally {
-        revalidatePath('/profile');
+        return { data: null, error: 'Failed to update Email information' };
+    }
+}
+export async function verifyUpdateEmail(path: string, uid: string) {
+    try {
+        const [clientIP, deviceInfo] = await Promise.all([
+            getClientIP(),
+            getDeviceInfo()
+        ]);
+        const response = await fetch(`${process.env.BACKEND_URL}/user/update${path}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Client-UID': uid,
+                'X-Client-IP': clientIP,
+                'X-Device-Info': deviceInfo,
+            }
+        });
+
+        const data = await response.json();
+        if (response.status === 201 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 200 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        if (response.status === 400 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        if (response.status === 429 && data?.message) {
+            return { data: null, error: data.message };
+        }
+        return { data: null, error: `Email verification failed with status: ${response.status}` };
+    } catch (error) {
+        return { data: null, error: "Invalid or Expired Verification Link" };
     }
 }
 export async function updatePassword(formData: PasswordUpdateType) {
     try {
-        await delay(2000); // Simulating API call
-        return {data: true, error: null};
+        const { token, error } = await getAuthToken();
+        if (error) {
+            return { data: null, error: error };
+        }
+        const response = await fetch(`${process.env.BACKEND_URL}/update/password`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+        const data = await response.json();
+        if (response.status === 200 && data.message) {
+            return { data: data.message, error: null };
+        }
+        if (response.status === 401 && data?.message) {
+            return { data: null, error: data.message, status: response.status };
+        }
+        return { data: null, error: `Failed to update password - status: ${response.status}` };
     } catch (error) {
-        return {error: 'Failed to update Password.'};
-    } finally {
-        revalidatePath('/profile');
+        return { data: null, error: 'Failed to update password' };
     }
 }
