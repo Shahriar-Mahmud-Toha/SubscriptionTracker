@@ -73,7 +73,7 @@ class SubscriptionService implements SubscriptionServiceInterface
             return $this->subscriptionRepository->updateSubscription($currSubsData, $newSubsData->toArrayWithNull());
         });
     }
-    public function updateSubscriptionsFile(int $subsId, int $authId, string $fileName=null): bool
+    public function updateSubscriptionsFile(int $subsId, int $authId, string $fileName): bool
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
         return DB::transaction(function () use ($subsId, $authId, $fileName) {
