@@ -28,6 +28,26 @@ class SubscriptionService implements SubscriptionServiceInterface
             return $this->subscriptionRepository->getAllUsersSubscriptions();
         });
     }
+    public function sendEmailNotificationBeforeSubsExpire(): bool
+    {
+        throw new \Exception('This method is not implemented yet.');
+        
+        DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        return DB::transaction(function () {
+            $data = $this->subscriptionRepository->showAllUsersAlmostExpiredSubscriptions();
+            if ($data->isEmpty()) {
+                return false; // No subscriptions to notify
+            }
+            foreach ($data as $subscription) {
+                $email = $subscription->email;
+                $name = $subscription->name;
+                $dateOfExpiration = Carbon::parse($subscription->date_of_expiration)->format('Y-m-d');
+                // Here you would typically send an email notification
+                // For example, using a Mail facade or a notification system
+                // Mail::to($email)->send(new SubscriptionReminder($name, $dateOfExpiration));
+            }
+        });
+    }
     public function showUsersAllSubscriptions(int $authId): EloquentCollection|null
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');

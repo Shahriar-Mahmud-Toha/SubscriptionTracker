@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\DTO\AuthenticationDTO;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendVerificationMailJob;
 use App\Services\Interfaces\AuthServiceInterface;
 use App\Services\Interfaces\UserValidationServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -81,7 +82,7 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Email already verified. You can login!'], 200);
             }
             $urls= $this->authService->generateVerificationUrls($user);
-            $this->authService->sendVerificationEmail($user, $urls);
+            SendVerificationMailJob::dispatch($user, $urls['frontend_url'])->onQueue('low');
             return response()->json(['message' => 'Verification link sent!'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);

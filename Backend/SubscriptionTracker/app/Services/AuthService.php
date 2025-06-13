@@ -4,21 +4,21 @@ namespace App\Services;
 
 use App\Constants\TokenConstants;
 use App\DTO\AuthenticationDTO;
+use App\Jobs\SendPasswordResetVerificationMailJob;
+use App\Jobs\SendVerificationMailJob;
 use App\Models\Authentication;
-use App\Notifications\CustomVerifyEmail;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Token;
 use Illuminate\Support\Str;
-use Ramsey\Uuid\Type\Time;
 
 class AuthService implements AuthServiceInterface
 {
@@ -41,7 +41,7 @@ class AuthService implements AuthServiceInterface
                 'exp' => Carbon::now()->addMinutes(TokenConstants::SIGNUP_EMAIL_TOKEN_VALIDITY)->timestamp
             ])->fromUser($data);
             $urls = $this->generateVerificationUrls($data);
-            $this->sendVerificationEmail($data, $urls);
+            SendVerificationMailJob::dispatch($data, $urls['frontend_url'])->onQueue('mid');
             return $token;
         });
     }
@@ -61,12 +61,6 @@ class AuthService implements AuthServiceInterface
             'signed_url' => $signedUrl,
             'frontend_url' => $frontendUrl,
         ];
-    }
-
-    public function sendVerificationEmail($user, $urls)
-    {
-        $frontendUrl = $urls['frontend_url'];
-        $user->notify(new CustomVerifyEmail($frontendUrl));
     }
 
     public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null
@@ -221,12 +215,11 @@ class AuthService implements AuthServiceInterface
                     return false; // Auth data not found for this user
                 }
                 $urls = $this->generateUpdateEmailVerificationUrls($currData);
-                $currData['email'] = $email;
                 $result = Redis::setex("updated_email:{$urls['signed_hash']}", TokenConstants::EMAIL_VERIFICATION_TOKEN_VALIDITY * 60, $email);
                 if (!$result) {
                     return false;
                 }
-                $this->sendVerificationEmail($currData, $urls);
+                SendVerificationMailJob::dispatch($currData, $urls['frontend_url'], $email)->onQueue('high');
 
                 return true;
             });
@@ -262,37 +255,6 @@ class AuthService implements AuthServiceInterface
             return false; // Handle exception as needed
         }
     }
-    // public function updateEmail(int $authId, string $email): bool
-    // {
-    //     DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-
-    //     return DB::transaction(function () use ($authId, $email) {
-    //         $currData = $this->authRepository->findAuthDataById($authId);
-    //         if (!$currData) {
-    //             return false; // Auth data not found for this user
-    //         }
-
-    //         $updatedData = [
-    //             'email' => $email,
-    //             'email_verified_at' => null
-    //         ];
-
-    //         if (!$this->authRepository->updateAuthData($currData, $updatedData)) {
-    //             return false;
-    //         }
-
-    //         $currData->email = $email;
-    //         $currData->email_verified_at = null;
-
-    //         try {
-    //             $currData->sendEmailVerificationNotification();
-    //         } catch (\Throwable $e) {
-    //             throw new \Exception("Failed to send verification email: " . $e->getMessage());
-    //         }
-
-    //         return true;
-    //     });
-    // }
     public function updatePassword(int $authId, string $password): bool
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
@@ -317,11 +279,7 @@ class AuthService implements AuthServiceInterface
         return DB::transaction(function () use ($email) {
             $token = Str::random(64);
             $this->authRepository->storeOrUpdateToken($email, $token, 1);
-
-            Mail::send('emails.password_reset', ['token' => $token], function ($message) use ($email) {
-                $message->to($email);
-                $message->subject('Reset Password Notification');
-            });
+            SendPasswordResetVerificationMailJob::dispatch($token, $email)->onQueue('mid');
 
             return true;
         });

@@ -19,4 +19,5 @@ interface SubscriptionServiceInterface
     public function deleteUsersSubscription(int $subsId, int $authId): bool;
     public function searchSubscriptions(string $keyword, int $authId): Collection;
     public function updateSubscriptionsFile(int $subsId, int $authId, string $fileName): bool;
+    public function sendEmailNotificationBeforeSubsExpire(): bool;
 }

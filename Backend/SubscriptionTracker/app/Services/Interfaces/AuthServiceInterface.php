@@ -9,7 +9,6 @@ use App\Models\Authentication;
 interface AuthServiceInterface
 {
     public function signup(AuthenticationDTO $authData);
-    public function sendVerificationEmail($user, $urls);
     public function generateVerificationUrls($user);
     public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null;
     public function refreshToken(string $refreshToken, Authentication $authData): array|int;
