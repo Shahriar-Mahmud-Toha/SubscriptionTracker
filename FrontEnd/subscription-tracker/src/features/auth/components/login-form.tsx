@@ -23,7 +23,7 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
         if (!response.error) {
             router.replace('/dashboard')
         } else {
-            ToastGeneralError(response.error);
+            ToastGeneralError(response.error, 5000);
         }
     };
 

@@ -2,15 +2,30 @@
 
 import { getClientId, getClientIP, getDeviceInfo } from "@/actions";
 import { LoginFormData, ResetPasswordFormData, SignupFormData } from "@/features/auth/types";
+import { isValidEmail, isValidToken } from "@/utils/validator";
 import { cookies } from 'next/headers';
 
 export async function login(formData: LoginFormData) {
     try {
+        if (!formData.email) {
+            return { data: null, error: "The email field is required." };
+        }
+        if (!isValidEmail(formData.email)) {
+            return { data: null, error: "Please enter a valid email address." };
+        }
+        if (formData.email.length > 255) {
+            return { data: null, error: "Max email address length is 255 characters." };
+        }
+        if (!formData.password) {
+            return { data: null, error: "The password field is required." };
+        }
+
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
             getClientIP(),
             getDeviceInfo()
         ]);
+
 
         const response = await fetch(`${process.env.BACKEND_URL}/login`, {
             method: 'POST',
@@ -28,10 +43,10 @@ export async function login(formData: LoginFormData) {
             const cookieStore = await cookies();
             const accessTokenValidity = Number(data.tokens.access_token_validity) || 1 * 60;
             const refreshTokenValidity = Number(data.tokens.refresh_token_validity) || 1 * 60 * 60;
-            
+
             cookieStore.delete('access_token');
             cookieStore.delete('refresh_token');
-            
+
             cookieStore.set('access_token', data.tokens.access_token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -130,7 +145,7 @@ export async function logout() {
             if (tokens && !error) {
                 accessToken = tokens.access_token;
             }
-            else{
+            else {
                 return { data: null, error: 'Unauthenticated Access Request. Please Login.' };
             }
         }
@@ -169,6 +184,28 @@ export async function getAuthToken() {
 }
 export async function signup(formData: SignupFormData) {
     try {
+        if (!formData.email) {
+            return { data: null, error: "The email field is required." };
+        }
+        if (!isValidEmail(formData.email)) {
+            return { data: null, error: "Please enter a valid email address." };
+        }
+        if (formData.email.length > 255) {
+            return { data: null, error: "Max email address length is 255 characters." };
+        }
+        if (!formData.password) {
+            return { data: null, error: "The password field is required." };
+        }
+        if (formData.password.length < 3) {
+            return { data: null, error: "The password must be at least 3 characters long." };
+        }
+        if (!formData.password_confirmation) {
+            return { data: null, error: "Please confirm your password." };
+        }
+        if (formData.password !== formData.password_confirmation) {
+            return { data: null, error: "Password confirmation does not match." };
+        }
+
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
             getClientIP(),
@@ -201,6 +238,13 @@ export async function signup(formData: SignupFormData) {
 
 export async function resendVerificationLink(token: string) {
     try {
+        if (!token) {
+            return { data: null, error: "Token is required." };
+        }
+        if (!/^[a-zA-Z0-9.-]+$/.test(token)) {
+            return { data: null, error: "Invalid token format." };
+        }
+
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
             getClientIP(),
@@ -263,6 +307,15 @@ export async function verifySignupEmail(path: string, uid: string) {
 }
 export async function forgotPassword(email: string) {
     try {
+        if (!email) {
+            return { data: null, error: "The email field is required." };
+        }
+        if (!isValidEmail(email)) {
+            return { data: null, error: "Please enter a valid email address." };
+        }
+        if (email.length > 255) {
+            return { data: null, error: "Max email address length is 255 characters." };
+        }
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
             getClientIP(),
@@ -296,6 +349,24 @@ export async function forgotPassword(email: string) {
 }
 export async function resetPassword(token: string, formData: ResetPasswordFormData) {
     try {
+        if (!token) {
+            return { data: null, error: "Token is required." };
+        }
+        if (!isValidToken(token)) {
+            return { data: null, error: "Invalid token format." };
+        }
+        if (!formData.password) {
+            return { data: null, error: "The password field is required." };
+        }
+        if (formData.password.length < 3) {
+            return { data: null, error: "The password must be at least 3 characters long." };
+        }
+        if (!formData.password_confirmation) {
+            return { data: null, error: "Please confirm your password." };
+        }
+        if (formData.password !== formData.password_confirmation) {
+            return { data: null, error: "Password confirmation does not match." };
+        }
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
             getClientIP(),

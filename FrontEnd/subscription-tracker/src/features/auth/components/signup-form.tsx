@@ -50,7 +50,7 @@ export default function SignupForm({ customClass }: { customClass?: string }) {
             ToastGeneralSuccess(response.data.message, 5000);
             setResendVerificationEmail(true);
         } else {
-            ToastGeneralError(response.error);
+            ToastGeneralError(response.error, 5000);
         }
     };
 

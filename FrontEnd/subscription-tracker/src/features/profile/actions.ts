@@ -1,8 +1,9 @@
 'use server';
-import { GeneralInfoType, PasswordUpdateType } from "./types";
+import { GeneralInfoType, PasswordUpdateType } from "@/features/profile/types";
 import { revalidatePath } from "next/cache";
 import { getAuthToken } from "@/features/auth/actions";
 import { getClientIP, getDeviceInfo } from "@/actions";
+import { isValidEmail } from "@/utils/validator";
 
 export async function fetchGeneralInfo() {
     try {
@@ -31,13 +32,45 @@ export async function fetchGeneralInfo() {
 }
 
 export async function updateGeneralInfo(formData: GeneralInfoType) {
-    const filteredData: Partial<GeneralInfoType> = {};
-    Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-            filteredData[key as keyof GeneralInfoType] = value;
-        }
-    });
     try {
+        // Form validation
+        if (formData.first_name) {
+            if (!/^[a-zA-Z\s]*$/.test(formData.first_name)) {
+                return { data: null, error: "The first name must contain only letters and spaces." };
+            }
+            if (formData.first_name.length > 255) {
+                return { data: null, error: "The first name may not be greater than 255 characters." };
+            }
+        }
+
+        if (formData.last_name) {
+            if (!/^[a-zA-Z\s]*$/.test(formData.last_name)) {
+                return { data: null, error: "The last name must contain only letters and spaces." };
+            }
+            if (formData.last_name.length > 255) {
+                return { data: null, error: "The last name may not be greater than 255 characters." };
+            }
+        }
+
+        if (formData.dob) {
+            const date = new Date(formData.dob);
+            if (isNaN(date.getTime())) {
+                return { data: null, error: "The date of birth must be a valid date." };
+            }
+            if (date > new Date()) {
+                return { data: null, error: "The date of birth cannot be in the future." };
+            }
+        }
+        if (!formData.dob && !formData.first_name && !formData.last_name) {
+            return { data: null, error: "At least one field is required to update." };
+        }
+
+        const filteredData: Partial<GeneralInfoType> = {};
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "") {
+                filteredData[key as keyof GeneralInfoType] = value;
+            }
+        });
         const { token, error } = await getAuthToken();
         if (error) {
             return { data: null, error: error };
@@ -96,6 +129,15 @@ export async function fetchEmail() {
 
 export async function updateEmail(email: string) {
     try {
+        if (!email) {
+            return { data: null, error: "The email field is required." };
+        }
+        if (!isValidEmail(email)) {
+            return { data: null, error: "Please enter a valid email address." };
+        }
+        if (email.length > 255) {
+            return { data: null, error: "Max email address length is 255 characters." };
+        }
         const { token, error } = await getAuthToken();
         if (error) {
             return { data: null, error: error };
@@ -159,6 +201,24 @@ export async function verifyUpdateEmail(path: string, uid: string) {
 }
 export async function updatePassword(formData: PasswordUpdateType) {
     try {
+        if (!formData.current_password) {
+            return { data: null, error: "The current password field is required." };
+        }
+        if (!formData.password) {
+            return { data: null, error: "The password field is required." };
+        }
+        if (formData.password.length < 3) {
+            return { data: null, error: "The password must be at least 3 characters long." };
+        }
+        if (formData.password.length > 255) {
+            return { data: null, error: "The password may not be greater than 255 characters." };
+        }
+        if (!formData.password_confirmation) {
+            return { data: null, error: "Please confirm your password." };
+        }
+        if (formData.password !== formData.password_confirmation) {
+            return { data: null, error: "Password confirmation does not match." };
+        }
         const { token, error } = await getAuthToken();
         if (error) {
             return { data: null, error: error };
