@@ -22,6 +22,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -87,7 +88,10 @@ class AppServiceProvider extends ServiceProvider
             return $limits;
         });
 
-        $schedule->command('cleanup:password_resets')->hourly();
         // $schedule->command('cleanup:password_resets')->everyMinute();
+
+        $schedule->call(function () {
+            DB::table('password_resets')->where('expires_at', '<', now())->delete();
+        })->hourly();
     }
 }

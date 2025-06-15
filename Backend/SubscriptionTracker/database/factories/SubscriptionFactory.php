@@ -32,6 +32,7 @@ class SubscriptionFactory extends Factory
             'date_of_purchase' => $purchaseDate,
             'duration' => $duration,
             'date_of_expiration' => $expirationDate,
+            'reminder_job_id'=> $this->faker->uuid,
             'account_info' => $this->faker->iban(null),
             'price' => $this->faker->randomFloat(2, 10, 500),
             'currency' => $this->faker->currencyCode,

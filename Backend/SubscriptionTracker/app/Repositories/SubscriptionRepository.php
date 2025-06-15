@@ -14,30 +14,6 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
         return Subscription::where('auth_id', $authId)->get();
     }
 
-    public function showAllUsersAlmostExpiredSubscriptions(): EloquentCollection|null
-    {
-        $now = now();
-
-        return Subscription::select([
-            'subscriptions.id',
-            'subscriptions.auth_id',
-            'subscriptions.name',
-            'subscriptions.date_of_expiration',
-            'authentications.email'
-        ])
-            ->join('authentications', 'subscriptions.auth_id', '=', 'authentications.id')
-            ->where(function ($query) use ($now) {
-                $query->whereNotNull('reminder_time')
-                    ->whereRaw('DATE(reminder_time) = ?', [$now->format('Y-m-d')])
-                    ->whereRaw('TIME(reminder_time) = ?', [$now->format('H:i:00')]);
-            })
-            ->orWhere(function ($query) use ($now) {
-                $query->whereNull('reminder_time')
-                    ->whereRaw('TIME(date_of_expiration) = ?', [$now->format('H:i:00')]);
-            })
-            ->orderBy('date_of_expiration')
-            ->get();
-    }
     public function showUsersAllSubscriptionsDescOrder(int $authId): EloquentCollection|null
     {
         return Subscription::where('auth_id', $authId)

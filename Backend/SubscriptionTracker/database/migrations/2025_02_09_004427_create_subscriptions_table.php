@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('date_of_purchase')->nullable();
             $table->integer('duration')->nullable();
             $table->dateTime('date_of_expiration');
+            $table->string('reminder_job_id', 100)->nullable();
             $table->string('account_info',255)->nullable();
             $table->decimal('price', 16, 2)->nullable();
             $table->string('currency',3)->nullable(); //App level enum

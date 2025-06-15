@@ -18,9 +18,17 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
                 'name' => ['required', 'string', 'max:255'],
                 'seller_info' => ['nullable', 'string', 'max:255'],
                 'date_of_purchase' => ['nullable', 'date'],
-                'reminder_time' => ['nullable', 'date'],
+                'reminder_time' => [
+                    'nullable',
+                    'date',
+                    'after:now',
+                ],
                 'duration' => ['nullable', 'numeric'],
-                'date_of_expiration' => ['required', 'date'],
+                'date_of_expiration' => [
+                    'required',
+                    'date',
+                    'after:now',
+                ],
                 'account_info' => ['nullable', 'string', 'max:255'],
                 'price' => ['nullable', 'numeric', 'between:0,99999999999999.99'],
                 'currency' => ['nullable', 'string', 'size:3'],
@@ -45,11 +53,13 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
                 'date_of_purchase.date' => 'The date of purchase must be a valid date.',
 
                 'reminder_time.date' => 'The reminder time must be a valid date.',
-                
+                'reminder_time.after' => 'The reminder time must be a future date and time.',
+
                 'duration.numeric' => 'The duration must be a number.',
 
                 'date_of_expiration.required' => 'The date of expiration is required.',
                 'date_of_expiration.date' => 'The date of expiration must be a valid date.',
+                'date_of_expiration.after' => 'The date of expiration must be a future date and time.',
 
                 'account_info.string' => 'The account information must be a string.',
                 'account_info.max' => 'The account information cannot be longer than 255 characters.',
@@ -108,14 +118,22 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
     public function validateSubscriptionUpdate(Request $request)
     {
         $validator = Validator::make(
-            $request->only(['name', 'seller_info', 'date_of_purchase', 'reminder_time','duration', 'date_of_expiration', 'account_info', 'price', 'currency', 'comment']),
+            $request->only(['name', 'seller_info', 'date_of_purchase', 'reminder_time', 'duration', 'date_of_expiration', 'account_info', 'price', 'currency', 'comment']),
             [
                 'name' => ['nullable', 'string', 'max:255'],
                 'seller_info' => ['nullable', 'string', 'max:255'],
                 'date_of_purchase' => ['nullable', 'date'],
-                'reminder_time' => ['nullable', 'date'],
+                'reminder_time' => [
+                    'nullable',
+                    'date',
+                    // 'after:now',
+                ],
                 'duration' => ['nullable', 'numeric'],
-                'date_of_expiration' => ['nullable', 'date'],
+                'date_of_expiration' => [
+                    'nullable',
+                    'date',
+                    // 'after:now',
+                ],
                 'account_info' => ['nullable', 'string', 'max:255'],
                 'price' => ['nullable', 'numeric', 'between:0,99999999999999.99'],
                 'currency' => ['nullable', 'string', 'size:3'],
@@ -131,10 +149,12 @@ class SubscriptionValidationService implements SubscriptionValidationServiceInte
                 'date_of_purchase.date' => 'The date of purchase must be a valid date.',
 
                 'reminder_time.date' => 'The reminder time must be a valid date.',
+                // 'reminder_time.after' => 'The reminder time must be a future date and time.',
 
                 'duration.numeric' => 'The duration must be a number.',
 
                 'date_of_expiration.date' => 'The date of expiration must be a valid date.',
+                // 'date_of_expiration.after' => 'The date of expiration must be a future date and time.',
 
                 'account_info.string' => 'The account information must be a string.',
                 'account_info.max' => 'The account information cannot be longer than 255 characters.',

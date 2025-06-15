@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\DTO\SubscriptionDTO;
 use App\Http\Controllers\Controller;
+use App\Models\Authentication;
+use App\Services\Interfaces\AuthServiceInterface;
 use App\Services\Interfaces\SubscriptionServiceInterface;
 use App\Services\Interfaces\SubscriptionValidationServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -12,13 +14,15 @@ use Illuminate\Support\Facades\Auth;
 
 class SubscriptionController extends Controller
 {
+    private AuthServiceInterface $authService;
     private SubscriptionServiceInterface $subscriptionService;
     private SubscriptionValidationServiceInterface $subscriptionValidationService;
 
-    public function __construct(SubscriptionServiceInterface $subscriptionService, SubscriptionValidationServiceInterface $subscriptionValidationService)
+    public function __construct(SubscriptionServiceInterface $subscriptionService, SubscriptionValidationServiceInterface $subscriptionValidationService, AuthServiceInterface $authService)
     {
         $this->subscriptionService = $subscriptionService;
         $this->subscriptionValidationService = $subscriptionValidationService;
+        $this->authService = $authService;
     }
 
     public function index(): JsonResponse
@@ -43,8 +47,12 @@ class SubscriptionController extends Controller
             if ($request->hasFile('file')) {
                 $data->file_name = basename($request->file('file')->store('subscriptions'));
             }
-            
-            return response()->json($this->subscriptionService->storeSubscription($data, Auth::id()), 201);
+            $authData = new Authentication();
+            $authData = $this->authService->findAuthDataById(Auth::id());
+            if (!$authData) {
+                return response()->json(["message"=>"User Not Found"], 404);
+            }
+            return response()->json($this->subscriptionService->storeSubscription($data, $authData), 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -101,7 +109,11 @@ class SubscriptionController extends Controller
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
-            if ($this->subscriptionService->updateSubscription($data, $id, Auth::id())) {
+            $authData = $this->authService->findAuthDataById(Auth::id());
+            if (!$authData) {
+                return response()->json(["message"=>"User Not Found"], 404);
+            }
+            if ($this->subscriptionService->updateSubscription($data, $id, $authData)) {
                 return response()->json(['message' => 'Subscription data Updated successfully'], 200);
             }
             return response()->json(['message' => 'Subscription data NOT Updated'], 500);
@@ -133,7 +145,11 @@ class SubscriptionController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-            $data = $this->subscriptionService->deleteUsersSubscription($id, Auth::id());
+            $authData = $this->authService->findAuthDataById(Auth::id());
+            if (!$authData) {
+                return response()->json(["message"=>"User Not Found"], 404);
+            }
+            $data = $this->subscriptionService->deleteSubscription($id, $authData);
             if (!$data) {
                 return response()->json(['message' => "No valid subscription data found"], 404);
             }
