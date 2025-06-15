@@ -18,7 +18,7 @@ class SendVerificationMailJob implements ShouldQueue
 
     public Authentication $user;
     public string $frontendUrl;
-    public string $customEmail;
+    public $customEmail;
 
     public function __construct($user, $frontendUrl, $customEmail = null)
     {
