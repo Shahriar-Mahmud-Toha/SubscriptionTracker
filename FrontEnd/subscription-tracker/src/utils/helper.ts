@@ -8,6 +8,9 @@ import { format } from "date-fns";
 export function formatStringDateToReadable(date: string): string {
     return format(new Date(date), 'd MMMM yyyy');
 }
+export function formatStringDateTimeToReadable(date: string): string {
+    return format(new Date(date), 'd MMMM yyyy, hh:mm a');
+}
 
 /**
  * Formats a date to the format: '12 April 2015'.
@@ -16,6 +19,9 @@ export function formatStringDateToReadable(date: string): string {
  */
 export function formatDateToReadable(date: Date): string {
     return format(date, 'd MMMM yyyy');
+}
+export function formatDateTimeToReadable(date: Date): string {
+    return format(date, 'd MMMM yyyy, hh:mm a');
 }
 
 /**

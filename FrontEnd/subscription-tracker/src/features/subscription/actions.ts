@@ -19,6 +19,30 @@ export async function fetchSubscriptions() {
         });
         const data = await response.json();
         if (response.status === 200) {
+            if (Array.isArray(data)) {
+                data.forEach(subscription => {
+                    if (subscription.reminder_time) {
+                        // Convert UTC to local time for display
+                        const date = new Date(subscription.reminder_time);
+                        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                        subscription.reminder_time = localDate.toISOString().slice(0, 16);
+                    }
+                    if (subscription.date_of_purchase) {
+                        // Format date for date input type (YYYY-MM-DD)
+                        const date = new Date(subscription.date_of_purchase);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        subscription.date_of_purchase = `${year}-${month}-${day}`;
+                    }
+                    if (subscription.date_of_expiration) {
+                        // Convert UTC to local time for display
+                        const date = new Date(subscription.date_of_expiration);
+                        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                        subscription.date_of_expiration = localDate.toISOString().slice(0, 16);
+                    }
+                });
+            }
             return { data, error: null };
         }
         if (response.status === 404 && data.message) {
@@ -55,12 +79,18 @@ export async function addSubscription(formData: SubscriptionType) {
         if (formData.reminder_time && isNaN(new Date(formData.reminder_time).getTime())) {
             return { data: null, error: "The reminder time must be a valid date with time." };
         }
+        if (formData.reminder_time && new Date(formData.reminder_time) < new Date()) {
+            return { data: null, error: "The reminder time must be in the future." };
+        }
 
         if (!formData.date_of_expiration) {
             return { data: null, error: "The date of expiration field is required." };
         }
         if (isNaN(new Date(formData.date_of_expiration).getTime())) {
             return { data: null, error: "The date of expiration must be a valid date." };
+        }
+        if (formData.date_of_expiration && new Date(formData.date_of_expiration) < new Date()) {
+            return { data: null, error: "The expiration date must be in the future." };
         }
 
         if (formData.account_info && formData.account_info.length > 255) {
@@ -131,11 +161,16 @@ export async function updateSubscription(formData: SubscriptionType) {
         if (formData.reminder_time && isNaN(new Date(formData.reminder_time).getTime())) {
             return { data: null, error: "The reminder time must be a valid date with time." };
         }
+        // if (formData.reminder_time && new Date(formData.reminder_time) < new Date()) {
+        //     return { data: null, error: "The reminder time must be in the future." };
+        // }
 
         if (formData.date_of_expiration && isNaN(new Date(formData.date_of_expiration).getTime())) {
             return { data: null, error: "The date of expiration must be a valid date." };
         }
-
+        // if (formData.date_of_expiration && new Date(formData.date_of_expiration) < new Date()) {
+        //     return { data: null, error: "The expiration date must be in the future." };
+        // }
         if (formData.account_info && formData.account_info.length > 255) {
             return { data: null, error: "The account info may not be greater than 255 characters." };
         }
@@ -173,7 +208,7 @@ export async function updateSubscription(formData: SubscriptionType) {
         if (response.status === 200 && data.message) {
             return { data: data.message, error: null };
         }
-        return { data: null, error: `Failed to update subscription - status: ${response.status}` };
+        return { data: null, error: data.message ? data.message : `Failed to update subscription - status: ${response.status}` };
     } catch (error) {
         return { data: null, error: 'Failed to update subscription information' };
     } finally {

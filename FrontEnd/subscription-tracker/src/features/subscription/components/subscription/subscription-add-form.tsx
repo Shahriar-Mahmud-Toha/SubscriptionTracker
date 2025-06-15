@@ -75,7 +75,8 @@ export default function SubscriptionAddForm({
                     errors={errors}
                     validation={{
                         validate: {
-                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The reminder time must be a valid date with time."
+                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The reminder time must be a valid date with time.",
+                            isFutureDate: (value) => !value || new Date(value as string) > new Date() || "The reminder time must be in the future."
                         }
                     }}
                 />
@@ -89,7 +90,8 @@ export default function SubscriptionAddForm({
                     validation={{
                         validate: {
                             required: (value) => Boolean(value) || "The date of expiration field is required.",
-                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The date of expiration must be a valid date."
+                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The date of expiration must be a valid date.",
+                            isFutureDate: (value) => !value || new Date(value as string) > new Date() || "The expiration date must be in the future."
                         }
                     }}
                 />

@@ -12,10 +12,15 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
+        watch
     } = useForm<SubscriptionType>({
         mode: "onBlur",
         defaultValues: subscription
     });
+
+    // Watch the date fields to compare with original values
+    const reminderTime = watch('reminder_time');
+    const expirationTime = watch('date_of_expiration');
 
     return (
         <div className={`w-full max-w-md mx-auto bg-secondary-background rounded-xl shadow-lg ${customClass}`}>
@@ -71,7 +76,13 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
                     errors={errors}
                     validation={{
                         validate: {
-                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The reminder time must be a valid date with time."
+                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The reminder time must be a valid date with time.",
+                            isFutureDate: (value) => {
+                                if (!value) return true;
+                                // Only validate if the date has changed
+                                if (value === subscription.reminder_time) return true;
+                                return new Date(value as string) > new Date() || "The reminder time must be in the future.";
+                            }
                         }
                     }}
                 />
@@ -85,7 +96,13 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
                     validation={{
                         validate: {
                             required: (value) => Boolean(value) || "The date of expiration field is required.",
-                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The date of expiration must be a valid date."
+                            isValidDate: (value) => !value || !isNaN(new Date(value as string).getTime()) || "The date of expiration must be a valid date.",
+                            isFutureDate: (value) => {
+                                if (!value) return true;
+                                // Only validate if the date has changed
+                                if (value === subscription.date_of_expiration) return true;
+                                return new Date(value as string) > new Date() || "The expiration date must be in the future.";
+                            }
                         }
                     }}
                 />

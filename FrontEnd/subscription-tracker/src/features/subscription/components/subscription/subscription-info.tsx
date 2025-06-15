@@ -1,4 +1,4 @@
-import { formatDateToReadable } from "@/utils/helper";
+import { formatDateTimeToReadable} from "@/utils/helper";
 import { SubscriptionType } from "@/features/subscription/types";
 import InfoShort from "@/components/data-showcase/info-short";
 import Image from "next/image";
@@ -58,7 +58,7 @@ export default function SubscriptionInfo({ data, customClass, handleEdit, handle
                             <div>
                                 <InfoShort
                                     text={item.name ?? 'Subscription Name'}
-                                    subText={`Expire Date: ${item.date_of_expiration ? formatDateToReadable(item.date_of_expiration) : 'N/A'}`}
+                                    subText={`Expire Date: ${item.date_of_expiration ? formatDateTimeToReadable(item.date_of_expiration) : 'N/A'}`}
                                 />
                                 <div className="flex items-center gap-2 mt-1 bg-secondary-background border-border rounded-xl px-2 py-1">
                                     <button
