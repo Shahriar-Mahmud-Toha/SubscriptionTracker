@@ -1,4 +1,4 @@
-# Subscription Tracker API
+# Subscription Tracker API ![version](https://img.shields.io/badge/version-1.6-blue)
 
 A robust backend API for managing and tracking user subscriptions, built with Laravel. This project enables users to securely register, verify their email, manage their profile, and perform full CRUD (Create, Read, Update, Delete) operations on their subscriptions. Users receive automated email notifications when subscriptions are about to expire or at a custom reminder time.
 
@@ -197,6 +197,16 @@ composer install
     ```
     QUEUE_CONNECTION=redis
     ```
+- **Generate Application Keys:**
+
+  After setting up your `.env` file, run the following commands to generate the necessary application keys:
+
+  ```bash
+  php artisan key:generate
+  php artisan jwt:secret
+  ```
+
+  These commands will set the `APP_KEY` and `JWT_SECRET` in your `.env` file, which are required for encryption and JWT authentication.
 
 ### 4. **Database Migration & Seeding**
 
