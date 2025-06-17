@@ -3,6 +3,7 @@
 use App\Http\Middleware\Authentication;
 use App\Http\Middleware\Authorization;
 use App\Http\Middleware\EmailUpdateVerification;
+use App\Http\Middleware\ServerVerification;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'authentication' => Authentication::class,
             'authorization' => Authorization::class,
             'EmailUpdateVerification' => EmailUpdateVerification::class,
+            'server-verification' => ServerVerification::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

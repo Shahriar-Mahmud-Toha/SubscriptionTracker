@@ -1,4 +1,4 @@
-# Subscription Tracker API ![version](https://img.shields.io/badge/version-1.6-blue)
+# Subscription Tracker API ![version](https://img.shields.io/badge/version-1.7-blue)
 
 A robust backend API for managing and tracking user subscriptions, built with Laravel. This project enables users to securely register, verify their email, manage their profile, and perform full CRUD (Create, Read, Update, Delete) operations on their subscriptions. Users receive automated email notifications when subscriptions are about to expire or at a custom reminder time.
 

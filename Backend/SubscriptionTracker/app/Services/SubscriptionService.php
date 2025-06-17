@@ -96,7 +96,11 @@ class SubscriptionService implements SubscriptionServiceInterface
                     return false;
                 }
                 $isReminderJobNeedUpdate = true;
-            } else if (!$currSubsData->reminder_time->eq($newSubsData->reminder_time)) {
+            } else if (
+                $currSubsData->reminder_time !== null &&
+                $newSubsData->reminder_time !== null &&
+                !$currSubsData->reminder_time->eq($newSubsData->reminder_time)
+            ) {
                 if ($newSubsData->reminder_time->isPast()) {
                     return false;
                 }
