@@ -14,6 +14,7 @@ export async function fetchSubscriptions() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
         });
@@ -126,6 +127,7 @@ export async function addSubscription(formData: SubscriptionType) {
         const response = await fetch(`${process.env.BACKEND_URL}/subscription/store`, {
             method: 'POST',
             headers: {
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
             body: formDataToSend,
@@ -200,6 +202,7 @@ export async function updateSubscription(formData: SubscriptionType) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(formData),
@@ -228,6 +231,7 @@ export async function searchSubscription(search: string) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
         });
@@ -255,6 +259,7 @@ export async function deleteSubscription(id: string) {
         const response = await fetch(`${process.env.BACKEND_URL}/subscription/delete/${id}`, {
             method: 'DELETE',
             headers: {
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
         });

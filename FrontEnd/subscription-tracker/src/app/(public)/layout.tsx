@@ -14,7 +14,7 @@ export default function RootLayout({
         logo={logo}
         altImg="Subscription Tracker Logo"
         developerName="Md. Shahriar Mahmud"
-        profileLink="http://github.com/Shahriar-Mahmud-Toha"
+        profileLink="https://mdshahriar.me/"
         customClasses="justify-center mb-5"
         priority={true}
       />

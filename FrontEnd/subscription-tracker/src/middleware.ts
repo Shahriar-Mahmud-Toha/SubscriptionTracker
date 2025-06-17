@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
                     response.cookies.set('access_token', tokens.access_token, {
                         httpOnly: true,
-                        secure: process.env.NODE_ENV === 'production',
+                        secure: process.env.COOKIE_SECURE === 'true',
                         maxAge: Number(tokens.access_token_validity) || 15 * 60,
                         sameSite: 'strict',
                         path: '/',
@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
                     response.cookies.set('refresh_token', tokens.refresh_token, {
                         httpOnly: true,
-                        secure: process.env.NODE_ENV === 'production',
+                        secure: process.env.COOKIE_SECURE === 'true',
                         maxAge: Number(tokens.refresh_token_validity) || 1 * 60 * 60,
                         sameSite: 'strict',
                         path: '/',

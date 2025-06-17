@@ -26,18 +26,17 @@ export async function login(formData: LoginFormData) {
             getDeviceInfo()
         ]);
 
-
         const response = await fetch(`${process.env.BACKEND_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-ID': clientId,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
             },
             body: JSON.stringify(formData),
         });
-
         const data = await response.json();
         if (response.status === 200 && data.tokens) {
             const cookieStore = await cookies();
@@ -49,14 +48,14 @@ export async function login(formData: LoginFormData) {
 
             cookieStore.set('access_token', data.tokens.access_token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.COOKIE_SECURE === 'true',
                 maxAge: accessTokenValidity,
                 sameSite: 'strict',
                 path: '/',
             });
             cookieStore.set('refresh_token', data.tokens.refresh_token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.COOKIE_SECURE === 'true',
                 maxAge: refreshTokenValidity,
                 sameSite: 'strict',
                 path: '/',
@@ -83,6 +82,7 @@ export async function refreshAccessToken(refreshToken: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${refreshToken}`,
             },
         });
@@ -102,6 +102,7 @@ export async function refreshAccessTokenOnLogout(refreshToken: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${refreshToken}`,
             },
         });
@@ -112,14 +113,14 @@ export async function refreshAccessTokenOnLogout(refreshToken: string) {
             cookieStore.delete('refresh_token');
             cookieStore.set('access_token', data.tokens.access_token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.COOKIE_SECURE === 'true',
                 maxAge: Number(data.tokens.access_token_validity) || 1 * 60,
                 sameSite: 'strict',
                 path: '/',
             });
             cookieStore.set('refresh_token', data.tokens.refresh_token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.COOKIE_SECURE === 'true',
                 maxAge: Number(data.tokens.refresh_token_validity) || 1 * 60 * 60,
                 sameSite: 'strict',
                 path: '/',
@@ -153,6 +154,7 @@ export async function logout() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${accessToken}`,
             },
         });
@@ -216,6 +218,7 @@ export async function signup(formData: SignupFormData) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-ID': clientId,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
@@ -255,6 +258,7 @@ export async function resendVerificationLink(token: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-ID': clientId,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
@@ -284,6 +288,7 @@ export async function verifySignupEmail(path: string, uid: string) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-UID': uid,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
@@ -325,6 +330,7 @@ export async function forgotPassword(email: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-ID': clientId,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
@@ -376,7 +382,8 @@ export async function resetPassword(token: string, formData: ResetPasswordFormDa
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Client-ID': clientId,
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
+                'X-Client-ID': clientId,    
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
             },

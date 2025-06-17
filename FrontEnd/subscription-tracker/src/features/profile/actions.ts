@@ -15,6 +15,7 @@ export async function fetchGeneralInfo() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
         });
@@ -79,6 +80,7 @@ export async function updateGeneralInfo(formData: GeneralInfoType) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(filteredData),
@@ -111,6 +113,7 @@ export async function fetchEmail() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
         });
@@ -146,6 +149,7 @@ export async function updateEmail(email: string) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ email: email }),
@@ -175,6 +179,7 @@ export async function verifyUpdateEmail(path: string, uid: string) {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'X-Client-UID': uid,
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
@@ -227,6 +232,7 @@ export async function updatePassword(formData: PasswordUpdateType) {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Server-Secret': process.env.SERVER_SECRET || '',
                 'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(formData),

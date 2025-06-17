@@ -7,9 +7,11 @@ import { LoginFormData } from '@/features/auth/types';
 import { useRouter } from 'next/navigation';
 import { login } from '@/features/auth/actions';
 import ToastGeneralError from '@/components/toasts/toast-general-error';
+import { useState } from 'react';
 
 export default function LoginForm({ customClass }: { customClass?: string }) {
     const router = useRouter();
+    const [isNavigating, setIsNavigating] = useState(false);
     const {
         register,
         handleSubmit,
@@ -19,11 +21,16 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
     });
 
     const onSubmit = async (data: LoginFormData) => {
-        const response = await login(data);
-        if (!response.error) {
-            router.replace('/dashboard')
-        } else {
-            ToastGeneralError(response.error, 5000);
+        try {
+            const response = await login(data);
+            if (!response.error) {
+                setIsNavigating(true); // Set navigating state
+                router.replace('/dashboard');
+            } else {
+                ToastGeneralError(response.error, 5000);
+            }
+        } catch (error) {
+            ToastGeneralError("An unexpected error occurred", 5000);
         }
     };
 
@@ -62,7 +69,12 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
                     }}
                 />
 
-                <SubmitButtonRegular isSubmitting={isSubmitting} disabledText="Logging in..." text="Login" customClasses="" />
+                <SubmitButtonRegular
+                    isSubmitting={isSubmitting || isNavigating}
+                    disabledText={isNavigating ? "Redirecting..." : "Logging in..."}
+                    text="Login"
+                    customClasses=""
+                />
             </form>
         </div>
     );
