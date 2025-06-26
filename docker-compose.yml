@@ -1,0 +1,109 @@
+services:
+  subs-tracker-backend:
+    build:
+      context: ./Backend/SubscriptionTracker
+      dockerfile: DockerFile
+    image: subs-tracker-backend
+    container_name: subs-tracker-backend
+    volumes:
+      - ./Backend/SubscriptionTracker:/var/www
+      - ./Backend/SubscriptionTracker/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - subs-tracker-database
+      - subs-tracker-redis
+    networks:
+      - app-network
+    environment:
+      APP_KEY: "${APP_KEY}"
+      APP_ENV: "${APP_ENV}"
+      APP_DEBUG: "${APP_DEBUG}"
+      
+      FRONT_END_URL: "${FRONT_END_URL}"
+      FRONTEND_SECRET: "${FRONTEND_SECRET}"
+      
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_DATABASE: "${MYSQL_DATABASE}"
+      DB_USERNAME: "${DB_USERNAME}"
+      DB_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PORT: "${REDIS_PORT}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+
+      MAIL_HOST: "${MAIL_HOST}"
+      MAIL_PORT: "${MAIL_PORT}"
+      MAIL_USERNAME: "${MAIL_USERNAME}"
+      MAIL_PASSWORD: "${MAIL_PASSWORD}"
+      MAIL_ENCRYPTION: "${MAIL_ENCRYPTION}"
+      MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS}"
+
+      JWT_SECRET: "${JWT_SECRET}"
+
+  subs-tracker-nginx:
+    image: nginx:stable
+    container_name: subs-tracker-nginx
+    ports:
+      - "80:3000"
+    volumes:
+      - ./Backend/SubscriptionTracker:/var/www
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/custom.conf
+    depends_on:
+      - subs-tracker-backend
+      - subs-tracker-frontend
+    networks:
+      - app-network
+
+  subs-tracker-frontend:
+    build:
+      context: ./Frontend/subscription-tracker
+      dockerfile: DockerFile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+    image: subs-tracker-frontend
+    container_name: subs-tracker-frontend
+    depends_on:
+      - subs-tracker-backend
+    networks:
+      - app-network
+    environment:
+      NODE_ENV: "${NODE_ENV}"
+      COOKIE_SECURE: "${COOKIE_SECURE}"
+      BACKEND_URL: "${BACKEND_URL}"
+      SERVER_SECRET: "${SERVER_SECRET}"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL}"
+      IP_LOOKUP: "${IP_LOOKUP}"
+    # ports:
+    #   - "3000:3000"
+
+  subs-tracker-database:
+    image: mysql:8.0.42
+    container_name: subs-tracker-database
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    networks:
+      - app-network
+    ports:
+      - "3308:${DB_PORT}"
+
+  subs-tracker-redis:
+    image: redis:8.0.2
+    container_name: subs-tracker-redis
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    networks:
+      - app-network
+    ports:
+      - "6389:${REDIS_PORT}"
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
