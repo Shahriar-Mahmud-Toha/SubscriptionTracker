@@ -26,6 +26,6 @@ class CustomVerifyEmail extends Notification
             ->greeting('Hello!')
             ->line('Please click the button below to verify your email address.')
             ->action('Verify Email Address', $this->frontendUrl)
-            ->salutation('Regards, ' . env('APP_NAME'));
+            ->salutation('Regards, ' . config('app.name'));
     }
 }

@@ -33,7 +33,8 @@
             color: #888;
             font-size: 13px;
         }
-        .maxW{
+
+        .maxW {
             max-width: 90%;
             word-break: break-all;
         }
@@ -44,9 +45,9 @@
     <div class="container">
         <h2>Reset Your Password</h2>
         <p>Hello,</p>
-        <p>You requested a password reset for your {{ env('APP_NAME') }} account.</p>
+        <p>You requested a password reset for your {{ config('app.name') }} account.</p>
         @php
-            $resetUrl = env('FRONT_END_URL') . '/forgot/reset_password/' . $token;
+        $resetUrl = config('app.FRONT_END_URL') . '/forgot/reset_password/' . $token;
         @endphp
         <p>
             <a href="{{ $resetUrl }}" class="button">Reset Password</a>
@@ -56,7 +57,7 @@
         <p>If you did not request a password reset, please ignore this email.</p>
         <div class="footer">
             Regards,<br>
-            {{ env('APP_NAME') }}
+            {{ config('app.name') }}
         </div>
     </div>
 </body>

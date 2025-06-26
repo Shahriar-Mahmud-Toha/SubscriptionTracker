@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    //Custom configuration for SubscriptionTracker
+
+    'FRONTEND_SECRET' => env('FRONTEND_SECRET'),
+    'FRONT_END_URL' => env('FRONT_END_URL'),
 ];

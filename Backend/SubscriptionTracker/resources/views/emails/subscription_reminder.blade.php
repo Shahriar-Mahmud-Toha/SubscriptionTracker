@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Subscription Expiration Reminder - {{ env('APP_NAME') }}</title>
+    <title>Subscription Expiration Reminder - {{ config('app.name') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -56,21 +56,21 @@
         <h2>Subscription Expiration Reminder</h2>
         <p>Hello {{ $user->email }},</p>
         <p>
-            This is a reminder from <strong>{{ env('APP_NAME') }}</strong> about your subscription that is expiring soon or have already expired:
+            This is a reminder from <strong>{{ config('app.name') }}</strong> about your subscription that is expiring soon or have already expired:
         </p>
         <ul>
             <li>
                 <strong>{{ $subscription->name }}</strong> &mdash;
                 @if ($subscription->date_of_expiration < now())
-                <span class="expired">Expired on {{ \Carbon\Carbon::parse($subscription->date_of_expiration)->format('M d, Y H:i') }}</span>
-                @else
-                <span class="expiring">Expires on {{ \Carbon\Carbon::parse($subscription->date_of_expiration)->format('M d, Y H:i') }}</span>
-                @endif
+                    <span class="expired">Expired on {{ \Carbon\Carbon::parse($subscription->date_of_expiration)->format('M d, Y H:i') }}</span>
+                    @else
+                    <span class="expiring">Expires on {{ \Carbon\Carbon::parse($subscription->date_of_expiration)->format('M d, Y H:i') }}</span>
+                    @endif
             </li>
         </ul>
         <div class="footer">
             Regards,<br>
-            {{ env('APP_NAME') }}
+            {{ config('app.name') }}
         </div>
     </div>
 </body>

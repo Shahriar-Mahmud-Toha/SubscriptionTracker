@@ -56,7 +56,7 @@ class AuthService implements AuthServiceInterface
         if (isset($parsed['query'])) {
             parse_str($parsed['query'], $queryParams);
         }
-        $frontendUrl = env('FRONT_END_URL') . '/verify-email?' . http_build_query($queryParams + ['hash' => $hash]);
+        $frontendUrl = config('app.FRONT_END_URL') . '/verify-email?' . http_build_query($queryParams + ['hash' => $hash]);
         return [
             'signed_url' => $signedUrl,
             'frontend_url' => $frontendUrl,
@@ -194,7 +194,7 @@ class AuthService implements AuthServiceInterface
         if (isset($parsed['query'])) {
             parse_str($parsed['query'], $queryParams);
         }
-        $frontendUrl = env('FRONT_END_URL') . '/verify-update-email?' . http_build_query($queryParams + [
+        $frontendUrl = config('app.FRONT_END_URL') . '/verify-update-email?' . http_build_query($queryParams + [
             'hash' => $hash,
             'type' => 'update'
         ]);

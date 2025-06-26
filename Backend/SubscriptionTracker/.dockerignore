@@ -1,0 +1,51 @@
+# Node and frontend related files (if present)
+node_modules/
+npm-debug.log
+yarn.lock
+yarn-error.log
+
+# Composer dependencies (handled by the Docker build)
+vendor/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Git and other VCS
+.git
+.gitignore
+.gitattributes
+
+# Development and test files
+tests/
+phpunit.xml
+phpunit.xml.dist
+coverage/
+docs/
+*.log
+*.swp
+*.swo
+
+# IDE/editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker and CI/CD
+# docker/
+docker-compose*.yml
+
+# Cache and storage (only cache, not storage/app/public or storage/framework/sessions if needed)
+storage/debugbar/
+storage/*.log
+
+# Miscellaneous
+*.bak
+*.tmp
+*.cache

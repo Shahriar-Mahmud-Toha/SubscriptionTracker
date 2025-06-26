@@ -13,7 +13,7 @@ return [
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 
     'allowed_origins' => [
-        env('FRONT_END_URL'),
+        config('app.FRONT_END_URL'),
     ],
 
     'allowed_origins_patterns' => [],
