@@ -5,6 +5,20 @@ Track, update, and get reminders for all your subscriptions with robust authenti
 
 ---
 
+## ✨ Features
+
+- Modern, responsive Next.js frontend for a seamless user experience.
+- Secure Laravel API backend with JWT authentication.
+- Full CRUD (Create, Read, Update, Delete) operations for managing subscriptions.
+- Email notifications and reminders for expired or instructed subscriptions.
+- Redis-powered queues for efficient email and reminder delivery.
+- Scheduled jobs and workers for cleaning up expired tokens and data.
+- Dockerized for easy local development and production deployment.
+- Nginx reverse proxy for unified access and security.
+- Environment variable support for flexible configuration.
+
+---
+
 ## 🚀 Project Structure
 
 This repository contains **both the frontend and backend** for Subscription Tracker:
@@ -78,6 +92,42 @@ You have two options:
    - [`docker-compose.production.yml`](./docker-compose.production.yml)
    - [`nginx/nginx.conf`](./nginx/nginx.conf)
    - [`.env.example`](./.env.example) → rename to `.env` and edit
+
+#### 📦 Quick File Download Instructions
+
+> **These commands help you quickly download the required Docker Compose, environment, and Nginx config files for setup.**  
+> The commands differ slightly depending on your operating system and terminal.
+
+---
+
+#### **Linux & macOS (Terminal/Bash/Zsh)**
+Use the following commands in your terminal (**Bash**, **Zsh**, or similar shells):
+
+```sh
+curl -O https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/docker-compose.production.yml
+mkdir -p nginx && curl -o nginx/nginx.conf https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/nginx/nginx.conf
+curl -O https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/.env.example && mv .env.example .env
+# Edit .env as needed, then:
+docker compose -f docker-compose.production.yml up -d
+```
+
+---
+
+#### **Windows (Command Prompt / cmd.exe)**
+
+For **cmd.exe**, you can use `curl` if it's available (Windows 10+):
+
+```cmd
+curl -O https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/docker-compose.production.yml
+mkdir nginx
+curl -o nginx\nginx.conf https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/nginx/nginx.conf
+curl -O https://raw.githubusercontent.com/Shahriar-Mahmud-Toha/SubscriptionTracker/master/.env.example
+rename .env.example .env
+
+# REM Edit .env as needed, then:
+
+docker compose -f docker-compose.production.yml up -d
+```
 
 2. **Start the stack with prebuilt images:**
 
