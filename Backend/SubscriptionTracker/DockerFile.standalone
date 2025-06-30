@@ -2,14 +2,15 @@ FROM php:8.4.1-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    nginx git unzip curl zip cron libzip-dev libpng-dev libjpeg-dev \
+    nginx git unzip curl zip cron redis-server \
+    iputils-ping mariadb-client \
+    libzip-dev libpng-dev libjpeg-dev \
     libfreetype6-dev libonig-dev libxml2-dev libcurl4-openssl-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd zip pdo_mysql mbstring xml \
     && pecl install redis && docker-php-ext-enable redis \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /var/www
 
 # Copy existing application directory permissions
@@ -31,6 +32,9 @@ COPY docker/nginx/nginx-standalone.conf /etc/nginx/conf.d/default.conf
 # Copy entrypoint script
 COPY docker/entrypoint.standalone.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+ENV REDIS_HOST=127.0.0.1 \
+    REDIS_PORT=6379
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \

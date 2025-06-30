@@ -7,30 +7,24 @@ if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
-# Wait for MySQL to be ready
-echo "Waiting for database connection..."
-until php -r "new PDO(getenv('DB_CONNECTION') . ':host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT'), getenv('DB_USERNAME'), getenv('DB_PASSWORD'));" 2>/dev/null; do
-  echo "Database not ready. Retrying in 3 seconds..."
+
+# Start Redis with password from ENV
+echo "Starting Redis with password..."
+echo "requirepass $REDIS_PASSWORD" > /etc/redis/redis.conf
+echo "appendonly yes" >> /etc/redis/redis.conf
+redis-server /etc/redis/redis.conf &
+
+# Wait until MySQL is accepting connections
+echo "Waiting for MySQL to be ready at $DB_HOST:$DB_PORT..."
+until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent; do
+  echo "MySQL is unavailable - sleeping"
   sleep 3
 done
-echo "Database is ready."
+echo "MySQL is up - continuing"
 
 # Check if migration table exists before migrating
 echo "Checking if migrations table exists..."
-MIGRATED=$(php -r "
-require 'vendor/autoload.php';
-$app = require 'bootstrap/app.php';
-\$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
-\$kernel->bootstrap();
-try {
-    \$exists = \Illuminate\Support\Facades\Schema::hasTable('migrations');
-    echo \$exists ? '1' : '0';
-} catch (Exception \$e) {
-    echo '0';
-}
-")
-
-if [ "$MIGRATED" = "0" ]; then
+if php artisan migrate:status | grep -q "Migration table not found"; then
   echo "Migrations not found. Running migrations..."
   until php artisan migrate --force; do
     echo "Migration failed, retrying in 3 seconds..."
@@ -40,6 +34,7 @@ if [ "$MIGRATED" = "0" ]; then
 else
   echo "Migrations already done. Skipping."
 fi
+
 
 # Cache and optimization
 php artisan optimize:clear
