@@ -34,7 +34,8 @@ COPY docker/entrypoint.standalone.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENV REDIS_HOST=127.0.0.1 \
-    REDIS_PORT=6379
+    REDIS_PORT=6379 \
+    DB_SSL_CA=/tmp/ca.pem
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \

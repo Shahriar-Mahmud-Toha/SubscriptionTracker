@@ -14,6 +14,16 @@ echo "requirepass $REDIS_PASSWORD" > /etc/redis/redis.conf
 echo "appendonly yes" >> /etc/redis/redis.conf
 redis-server /etc/redis/redis.conf &
 
+# Copying MySQL CA file only if SSL is required
+if [ "$DB_SSL_MODE" = "REQUIRED" ]; then
+  echo "DB_SSL_MODE is REQUIRED. Setting up MySQL CA certificate..."
+  echo "$DB_SSL_CA_BASE64" | base64 -d > /tmp/ca.pem
+  echo /tmp/ca.pem
+  export DB_SSL_CA=/tmp/ca.pem
+else
+  echo "DB_SSL_MODE is not REQUIRED. Skipping MySQL CA certificate setup."
+fi
+
 # Wait until MySQL is accepting connections
 echo "Waiting for MySQL to be ready at $DB_HOST:$DB_PORT..."
 until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent; do
