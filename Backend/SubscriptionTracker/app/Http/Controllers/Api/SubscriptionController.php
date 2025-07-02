@@ -47,12 +47,11 @@ class SubscriptionController extends Controller
             if ($request->hasFile('file')) {
                 $data->file_name = basename($request->file('file')->store('subscriptions'));
             }
-            $authData = new Authentication();
-            $authData = $this->authService->findAuthDataById(Auth::id());
-            if (!$authData) {
+            $userData = $this->authService->findAuthUserDetailsById(Auth::id());
+            if (!$userData) {
                 return response()->json(["message"=>"User Not Found"], 404);
             }
-            return response()->json($this->subscriptionService->storeSubscription($data, $authData), 201);
+            return response()->json($this->subscriptionService->storeSubscription($data, $userData, isset($userData['user']['timezone_last_known']) ? $userData['user']['timezone_last_known'] : "UTC"), 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
@@ -109,11 +108,11 @@ class SubscriptionController extends Controller
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
-            $authData = $this->authService->findAuthDataById(Auth::id());
-            if (!$authData) {
+            $userData = $this->authService->findAuthUserDetailsById(Auth::id());
+            if (!$userData) {
                 return response()->json(["message"=>"User Not Found"], 404);
             }
-            if ($this->subscriptionService->updateSubscription($data, $id, $authData)) {
+            if ($this->subscriptionService->updateSubscription($data, $id, $userData, isset($userData['user']['timezone_last_known']) ? $userData['user']['timezone_last_known'] : "UTC")) {
                 return response()->json(['message' => 'Subscription data Updated successfully'], 200);
             }
             return response()->json(['message' => 'Subscription data NOT Updated'], 500);

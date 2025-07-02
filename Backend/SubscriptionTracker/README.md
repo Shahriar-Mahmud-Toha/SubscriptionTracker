@@ -1,4 +1,4 @@
-# Subscription Tracker API ![version](https://img.shields.io/badge/version-1.8-blue)
+# Subscription Tracker API ![version](https://img.shields.io/badge/version-1.9-blue)
 
 A robust backend API for managing and tracking user subscriptions, built with Laravel. This project enables users to securely register, verify their email, manage their profile, and perform full CRUD (Create, Read, Update, Delete) operations on their subscriptions. Users receive automated email notifications when subscriptions are about to expire or at a custom reminder time.
 
@@ -242,12 +242,15 @@ php artisan schedule:work
 
 ---
 
-## 🔒 License & Usage
+## 📝 License
 
 This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
 
 You are free to view, share, and adapt the code for **non-commercial purposes** with proper attribution.  
-Commercial use, redistribution, or republishing is **not allowed** without explicit permission from the author **Md. Shahriar Mahmud** (GitHub: *Shahriar-Mahmud-Toha*).
+**Commercial use, redistribution, or republishing is not allowed** without explicit permission from the author.
+
+For permission requests, please contact via [mdshahriar.me](https://mdshahriar.me)  
+or reach out on GitHub: [Shahriar-Mahmud-Toha](https://github.com/Shahriar-Mahmud-Toha).
 
 ---
 

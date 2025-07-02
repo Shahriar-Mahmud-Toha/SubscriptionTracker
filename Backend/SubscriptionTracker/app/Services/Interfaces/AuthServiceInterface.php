@@ -8,9 +8,9 @@ use App\Models\Authentication;
 
 interface AuthServiceInterface
 {
-    public function signup(AuthenticationDTO $authData);
+    public function signup(AuthenticationDTO $authData, $timezone_preferred='UTC');
     public function generateVerificationUrls($user);
-    public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null;
+    public function loginUser(AuthenticationDTO $authData, array $sessionData, $timezone_preferred): array|int|null;
     public function refreshToken(string $refreshToken, Authentication $authData): array|int;
     public function logout(string $accessToken): int;
     public function invalidateToken(string $token): bool;

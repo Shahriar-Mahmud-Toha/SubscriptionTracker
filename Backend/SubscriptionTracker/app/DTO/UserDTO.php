@@ -10,6 +10,8 @@ class UserDTO
     public ?string $first_name = null;
     public ?string $last_name = null;
     public ?Carbon $dob = null;
+    public ?string $timezone_preferred = null;
+    public ?string $timezone_last_known = null;
 
     public function toArray(): array
     {

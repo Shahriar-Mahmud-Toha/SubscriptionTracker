@@ -12,7 +12,7 @@ class User extends Model
     protected $primaryKey = 'id';
     public $incrementing = true;
     public $timestamps = true;
-    protected $fillable = ['auth_id', 'first_name', 'last_name', 'dob'];
+    protected $fillable = ['auth_id', 'first_name', 'last_name', 'dob', 'timezone_preferred', 'timezone_last_known'];
 
     //One to one
     public function authentication()

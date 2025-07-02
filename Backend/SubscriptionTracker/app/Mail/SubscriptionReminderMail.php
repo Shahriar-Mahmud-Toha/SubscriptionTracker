@@ -3,12 +3,14 @@
 namespace App\Mail;
 
 use App\Models\Authentication;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionReminderMail extends Mailable
 {
@@ -16,12 +18,14 @@ class SubscriptionReminderMail extends Mailable
 
     public Authentication $user;
     public $subscription;
+    public string $timezone;
 
 
-    public function __construct($user, $subscription)
+    public function __construct($user, $subscription, string $timezone = 'UTC')
     {
         $this->user = $user;
         $this->subscription = $subscription;
+        $this->timezone = $timezone;
     }
 
     /**
@@ -44,6 +48,7 @@ class SubscriptionReminderMail extends Mailable
             with: [
                 'user' => $this->user,
                 'subscription' => $this->subscription,
+                'timezone' => $this->timezone
             ]
         );
     }

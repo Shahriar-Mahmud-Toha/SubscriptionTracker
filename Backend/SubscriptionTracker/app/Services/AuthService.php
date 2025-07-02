@@ -4,17 +4,19 @@ namespace App\Services;
 
 use App\Constants\TokenConstants;
 use App\DTO\AuthenticationDTO;
+use App\DTO\UserDTO;
 use App\Jobs\SendPasswordResetVerificationMailJob;
 use App\Jobs\SendVerificationMailJob;
 use App\Models\Authentication;
+use App\Models\User;
 use App\Repositories\Contracts\AuthRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\UserServiceInterface;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Token;
@@ -24,17 +26,28 @@ class AuthService implements AuthServiceInterface
 {
 
     protected $authRepository;
+    protected $userRepository;
 
-    public function __construct(AuthRepositoryInterface $authRepository)
+    public function __construct(AuthRepositoryInterface $authRepository, UserRepositoryInterface $userRepository)
     {
         $this->authRepository = $authRepository;
+        $this->userRepository = $userRepository;
     }
 
-    public function signup(AuthenticationDTO $authData)
+    public function signup(AuthenticationDTO $authData, $timezone_preferred = 'UTC')
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-        return DB::transaction(function () use ($authData) {
+        return DB::transaction(function () use ($authData, $timezone_preferred) {
             $data = $this->authRepository->signup($authData->toArray());
+
+            $userData = [
+                'auth_id' => $data->id,
+                'timezone_preferred' => $timezone_preferred,
+                'timezone_last_known' => $timezone_preferred,
+            ];
+
+            $this->userRepository->createUser($userData);
+
             $token = JWTAuth::customClaims([
                 'role' => $data->role,
                 'type' => 'signup',
@@ -63,10 +76,10 @@ class AuthService implements AuthServiceInterface
         ];
     }
 
-    public function loginUser(AuthenticationDTO $authData, array $sessionData): array|int|null
+    public function loginUser(AuthenticationDTO $authData, array $sessionData, $timezone_last_known = 'UTC'): array|int|null
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
-        return DB::transaction(function () use ($authData, $sessionData) {
+        return DB::transaction(function () use ($authData, $sessionData, $timezone_last_known) {
             $verifiedUser = $this->authRepository->findAuthDataByEmail($authData->email);
             if ($verifiedUser == null || !Hash::check($authData->password, $verifiedUser->password) || $verifiedUser->email_verified_at == null) {
                 return -1; // Invalid credentials
@@ -77,7 +90,10 @@ class AuthService implements AuthServiceInterface
                 'device_info' => $sessionData['device_info'],
             ];
             $authSessionData = $this->authRepository->createApiSession($apiSession);
-            if ($authSessionData == null) {
+            $userData = $this->userRepository->updateUser($verifiedUser->id, [
+                'timezone_last_known' => $timezone_last_known,
+            ]);
+            if ($authSessionData == null || !$userData) {
                 DB::rollBack();
                 return -2;
             }

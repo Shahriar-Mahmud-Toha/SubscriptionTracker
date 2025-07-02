@@ -14,8 +14,8 @@ interface SubscriptionServiceInterface
     public function showUsersAllSubscriptions(int $authId): EloquentCollection|null;
     public function getUsersSubscriptionById(int $subsId, int $authId): Subscription|null;
     public function getSubscriptionById(int $subsId): Subscription|null;
-    public function storeSubscription(SubscriptionDTO $subsData, Authentication $authData): Subscription|null;
-    public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, Authentication $authData): bool;
+    public function storeSubscription(SubscriptionDTO $subsData, Authentication $authData, string $timezone): Subscription|null;
+    public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, Authentication $authData, string $timezone): bool;
     public function deleteSubscription(int $subsId, Authentication $authData): bool;
     public function deleteUsersSubscription(int $subsId, int $authId): bool;
     public function searchSubscriptions(string $keyword, int $authId): Collection;

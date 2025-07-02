@@ -30,9 +30,10 @@ class UserValidationService implements UserValidationServiceInterface
 
     public function validateUserSignup(Request $request)
     {
-        $validator = Validator::make($request->only(['email', 'password', 'password_confirmation']), [
+        $validator = Validator::make($request->only(['email', 'password', 'password_confirmation', 'timezone_preferred']), [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:authentications'],
             'password' => ['required', 'string', 'min:3', 'confirmed'],
+            'timezone_preferred' => ['required', 'string', 'timezone'],
         ], [
             'email.required' => 'The email field is required.',
             'email.string' => 'The email field must be string.',
@@ -44,6 +45,10 @@ class UserValidationService implements UserValidationServiceInterface
             'password.string' => 'The password field must be string.',
             'password.min' => 'The password must be at least 3 characters long.',
             'password.confirmed' => 'Password confirmation does not match.',
+
+            'timezone_preferred.required' => 'The preferred timezone field is required.',
+            'timezone_preferred.string' => 'The preferred timezone field must be a string.',
+            'timezone_preferred.timezone' => 'The preferred timezone field must be a valid timezone.',
         ]);
         if ($validator->fails()) {
             return [
@@ -57,7 +62,11 @@ class UserValidationService implements UserValidationServiceInterface
         $authenticationDTO->email = $validatedData['email'];
         $authenticationDTO->password = $validatedData['password'];
 
-        return $authenticationDTO;
+        return [
+            'success' => true,
+            'authentication' => $authenticationDTO,
+            'timezone_preferred' => $validatedData['timezone_preferred'],
+        ];
     }
     public function validateUserRequestHeader(Request $request): array
     {
@@ -75,9 +84,10 @@ class UserValidationService implements UserValidationServiceInterface
     }
     public function validateUserLogin(Request $request)
     {
-        $validator = Validator::make($request->only(['email', 'password']), [
+        $validator = Validator::make($request->only(['email', 'password', 'timezone_last_known']), [
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:3'],
+            'timezone_last_known' => ['required', 'string', 'timezone'],
         ], [
             'email.required' => 'The email field is required.',
             'email.string' => 'The email field must be string.',
@@ -86,6 +96,10 @@ class UserValidationService implements UserValidationServiceInterface
             'password.required' => 'The password field is required.',
             'password.string' => 'The password field must be string.',
             'password.min' => 'The password must be at least 3 characters long.',
+
+            'timezone_last_known.required' => 'The timezone_last_known field is required.',
+            'timezone_last_known.string' => 'The timezone_last_known field must be a string.',
+            'timezone_last_known.timezone' => 'The timezone_last_known field must be a valid timezone.',
         ]);
         if ($validator->fails()) {
             return [
@@ -99,7 +113,11 @@ class UserValidationService implements UserValidationServiceInterface
         $authDTO->email = $validatedData['email'];
         $authDTO->password = $validatedData['password'];
 
-        return $authDTO;
+        return [
+            'success' => true,
+            'authentication' => $authDTO,
+            'timezone_last_known' => $validatedData['timezone_last_known'],
+        ];
     }
 
     public function validateUser(Request $request, int $auth_id)

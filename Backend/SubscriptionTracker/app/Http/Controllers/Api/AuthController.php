@@ -27,13 +27,14 @@ class AuthController extends Controller
     public function signupUser(Request $request)
     {
         try {
-            $data = new AuthenticationDTO();
             $data = $this->userValidationService->validateUserSignup($request);
             if (is_array($data) && !$data['success']) {
                 return response()->json($data['errors'], 400);
             }
-            $data->role = 'user';
-            $result = $this->authService->signup($data);
+            $authData = new AuthenticationDTO();
+            $authData = $data['authentication'];
+            $authData->role = 'user';
+            $result = $this->authService->signup($authData, $data['timezone_preferred']);
             if (!$result) {
                 return response()->json(['message' => 'Account Creation Failed'], 500);
             }
@@ -114,16 +115,17 @@ class AuthController extends Controller
             if (is_array($reqData) && !$reqData['success']) {
                 return response()->json(["message" => $reqData['errors']], 400);
             }
-            $data = new AuthenticationDTO();
             $data = $this->userValidationService->validateUserLogin($request);
             if (is_array($data) && !$data['success']) {
                 return response()->json(["message" => $data['errors']], 400);
             }
+            $authData = new AuthenticationDTO();
+            $authData = $data['authentication'];
             $sessionData = [
                 'ip_address' => $request->header('X-Client-IP'),
                 'device_info' => $request->header('X-Device-Info'),
             ];
-            $tokens = $this->authService->loginUser($data, $sessionData);
+            $tokens = $this->authService->loginUser($authData, $sessionData, $data['timezone_last_known']);
             if ($tokens <= 0) {
                 return response()->json(['error' => 'Invalid credentials'], 401);
             }

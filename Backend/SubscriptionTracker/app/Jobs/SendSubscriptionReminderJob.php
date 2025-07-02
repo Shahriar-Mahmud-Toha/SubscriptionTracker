@@ -17,14 +17,16 @@ class SendSubscriptionReminderJob implements ShouldQueue
 
     public Authentication $user;
     public $subscription;
+    public string $timezone;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($user, $subscription)
+    public function __construct($user, $subscription, string $timezone = 'UTC')
     {
         $this->user = $user;
         $this->subscription = $subscription;
+        $this->timezone = $timezone;
     }
 
     public function handle(): void
@@ -33,6 +35,7 @@ class SendSubscriptionReminderJob implements ShouldQueue
             ->send(new SubscriptionReminderMail(
                 $this->user,
                 $this->subscription,
+                $this->timezone
             ));
     }
 }

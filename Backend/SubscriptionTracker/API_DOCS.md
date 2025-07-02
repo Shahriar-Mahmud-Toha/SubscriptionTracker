@@ -19,7 +19,8 @@ This API enables secure user registration, authentication, profile management, a
 {
   "email": "john@example.com",
   "password": "Password123!",
-  "password_confirmation": "Password123!"
+  "password_confirmation": "Password123!",
+  "timezone_preferred":"Asia/Dhaka"
 }
 ```
 
@@ -112,7 +113,8 @@ This API enables secure user registration, authentication, profile management, a
 ```json
 {
   "email": "john@example.com",
-  "password": "Password123!"
+  "password": "Password123!",
+  "timezone_last_known":"Asia/Dhaka"
 }
 ```
 

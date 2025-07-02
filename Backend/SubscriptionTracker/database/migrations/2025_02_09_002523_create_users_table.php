@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('first_name',16)->nullable();
             $table->string('last_name',16)->nullable();
             $table->date('dob')->nullable();
+            $table->string('timezone_preferred',40)->nullable();
+            $table->string('timezone_last_known',40);
             $table->timestamps();
         });
     }

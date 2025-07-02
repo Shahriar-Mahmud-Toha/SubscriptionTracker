@@ -7,6 +7,7 @@ use App\Jobs\SendSubscriptionReminderJob;
 use App\Models\Authentication;
 use App\Models\Subscription;
 use App\Repositories\Contracts\SubscriptionRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Interfaces\AuthServiceInterface;
 use App\Services\Interfaces\SubscriptionServiceInterface;
 use Carbon\Carbon;
@@ -22,11 +23,13 @@ class SubscriptionService implements SubscriptionServiceInterface
 {
     protected $subscriptionRepository;
     protected $authService;
+    protected $userRepository;
 
-    public function __construct(SubscriptionRepositoryInterface $subscriptionRepository, AuthServiceInterface $authService)
+    public function __construct(SubscriptionRepositoryInterface $subscriptionRepository, AuthServiceInterface $authService, UserRepositoryInterface $userRepository)
     {
         $this->subscriptionRepository = $subscriptionRepository;
         $this->authService = $authService;
+        $this->userRepository = $userRepository;
     }
 
     public function getAllUsersSubscriptions(): Collection
@@ -57,13 +60,13 @@ class SubscriptionService implements SubscriptionServiceInterface
             return $this->subscriptionRepository->getSubscriptionById($subsId);
         });
     }
-    public function storeSubscription(SubscriptionDTO $subsData, Authentication $authData): Subscription|null
+    public function storeSubscription(SubscriptionDTO $subsData, Authentication $authData, string $timezone='UTC'): Subscription|null
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-        return DB::transaction(function () use ($subsData, $authData) {
+        return DB::transaction(function () use ($subsData, $authData, $timezone) {
 
             $newData = array_merge($subsData->toArray(), ['auth_id' => $authData->id]);
-            $jobId = $this->scheduleSubscriptionReminder($authData, (object)$newData);
+            $jobId = $this->scheduleSubscriptionReminder($authData, (object)$newData, $timezone);
             if (!$jobId) {
                 DB::rollBack();
                 return null;
@@ -76,10 +79,10 @@ class SubscriptionService implements SubscriptionServiceInterface
             return $result;
         });
     }
-    public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, Authentication $authData): bool
+    public function updateSubscription(SubscriptionDTO $newSubsData, int $subsId, Authentication $authData, string $timezone='UTC'): bool
     {
         DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
-        return DB::transaction(function () use ($newSubsData, $subsId, $authData) {
+        return DB::transaction(function () use ($newSubsData, $subsId, $authData, $timezone) {
             $currSubsData = $this->subscriptionRepository->getUsersSubscriptionById($subsId, $authData->id);
             if (!$currSubsData) {
                 return false; // Subscription not found for this user
@@ -114,7 +117,7 @@ class SubscriptionService implements SubscriptionServiceInterface
             $newDataArray = $newSubsData->toArrayWithNull();
             if ($isReminderJobNeedUpdate) {
                 $this->deleteQueuedJobById('reminder', $currSubsData->reminder_job_id);
-                $jobId = $this->scheduleSubscriptionReminder($authData, (object)$newDataArray);
+                $jobId = $this->scheduleSubscriptionReminder($authData, (object)$newDataArray, $timezone);
                 if (!$jobId) {
                     DB::rollBack();
                     return false; // Failed to schedule reminder job
@@ -131,11 +134,11 @@ class SubscriptionService implements SubscriptionServiceInterface
         });
     }
 
-    public function scheduleSubscriptionReminder($user, $subscription): string|null
+    public function scheduleSubscriptionReminder($user, $subscription, $timezone="UTC"): string|null
     {
         $delayUntil = isset($subscription->reminder_time) ? Carbon::parse($subscription->reminder_time) : Carbon::parse($subscription->date_of_expiration);
 
-        $job = new SendSubscriptionReminderJob($user, $subscription);
+        $job = new SendSubscriptionReminderJob($user, $subscription, $timezone);
         $jobId = Queue::later($delayUntil, $job, null, 'reminder');
         return $jobId;
     }

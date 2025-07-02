@@ -25,6 +25,8 @@ class UserFactory extends Factory
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,
             'dob' => $this->faker->date('Y-m-d', '2000-01-01'),
+            'timezone_preferred' => $this->faker->timezone,
+            'timezone_last_known' => $this->faker->timezone,
         ];
     }
 }
