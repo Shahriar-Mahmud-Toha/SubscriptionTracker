@@ -52,3 +52,12 @@ export async function getClientId(): Promise<string> {
         return 'unknown';
     }
 }
+export async function isValidTimezone(timezone: string): Promise<boolean> {
+    try {
+        // Trying to create a DateTimeFormat with the timezone. If it fails, the timezone is invalid.
+        Intl.DateTimeFormat(undefined, { timeZone: timezone });
+        return true;
+    } catch (e) {
+        return false;
+    }
+}

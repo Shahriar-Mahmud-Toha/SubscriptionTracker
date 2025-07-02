@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-
+import { DateTime } from 'luxon';
 /**
  * Formats a date to the format: '12 April 2015'.
  * @param date - The date as string to format.
@@ -22,6 +22,25 @@ export function formatDateToReadable(date: Date): string {
 }
 export function formatDateTimeToReadable(date: Date): string {
     return format(date, 'd MMMM yyyy, hh:mm a');
+}
+
+export function convertLocalStringDateTimeToUTC(date: string, fromZone: string): Date {
+    const dt = DateTime.fromISO(date, { zone: fromZone });
+    const converted = dt.setZone('UTC');
+    return converted.toJSDate();
+}
+
+export function toDateInputValue(dateStr?: string) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toISOString().split('T')[0];
+}
+
+export function toDateTimeLocalInputValue(dateStr?: string) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 /**

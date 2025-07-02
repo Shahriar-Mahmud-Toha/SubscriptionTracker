@@ -4,23 +4,23 @@ import { useForm } from 'react-hook-form';
 import SubmitButtonRegular from '@/components/buttons/submit-button-regular';
 import FormInput from '@/components/forms/form-input';
 import { SubscriptionType } from '@/features/subscription/types';
-import { currencyOptions } from '@/utils/helper';
+import { currencyOptions, toDateInputValue, toDateTimeLocalInputValue } from '@/utils/helper';
 
 export default function SubscriptionEditForm({ subscription, onEdit, customClass = "" }: { subscription: SubscriptionType, onEdit: (subscription: SubscriptionType) => void, customClass?: string }) {
-
+    subscription = {
+        ...subscription,
+        date_of_purchase: toDateInputValue(subscription.date_of_purchase),
+        reminder_time: toDateTimeLocalInputValue(subscription.reminder_time),
+        date_of_expiration: toDateTimeLocalInputValue(subscription.date_of_expiration)
+    };
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-        watch
     } = useForm<SubscriptionType>({
         mode: "onBlur",
         defaultValues: subscription
     });
-
-    // Watch the date fields to compare with original values
-    const reminderTime = watch('reminder_time');
-    const expirationTime = watch('date_of_expiration');
 
     return (
         <div className={`w-full max-w-md mx-auto bg-secondary-background rounded-xl shadow-lg ${customClass}`}>
@@ -164,4 +164,4 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
             </form>
         </div>
     );
-} 
+}

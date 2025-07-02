@@ -5,6 +5,11 @@ Track, update, and get reminders for all your subscriptions with robust authenti
 
 ---
 
+## 🌐 Live Demo
+
+**Access** [Subscription Tracker](https://subs-tracker.mdshahriar.me/) Online.
+
+---
 ## ✨ Features
 
 - Modern, responsive Next.js frontend for a seamless user experience.
@@ -357,6 +362,9 @@ networks:
 This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
 
 You are free to view, share, and adapt the code for **non-commercial purposes** with proper attribution.  
-Commercial use, redistribution, or republishing is **not allowed** without explicit permission from the author **Md. Shahriar Mahmud** (GitHub: [Shahriar-Mahmud-Toha](https://github.com/Shahriar-Mahmud-Toha)).
+**Commercial use, redistribution, or republishing is not allowed** without explicit permission from the author.
+
+For permission requests, please contact via [mdshahriar.me](https://mdshahriar.me)  
+or reach out on GitHub: [Shahriar-Mahmud-Toha](https://github.com/Shahriar-Mahmud-Toha).
 
 ---

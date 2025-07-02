@@ -6,9 +6,10 @@ import { SubscriptionType } from '@/features/subscription/types';
 import { useSubscription } from '@/features/subscription/contexts/subscription-context';
 import SubscriptionInfo from '@/features/subscription/components/subscription/subscription-info';
 import SubscriptionAddModal from '@/features/subscription/components/subscription/subscription-add-modal';
+import ToastGeneralError from '@/components/toasts/toast-general-error';
 
 export default function SubscriptionController({ initialData }: { initialData: SubscriptionType[] }) {
-    const { isAddModalOpen, setIsAddModalOpen, setIsEditModalOpen, setIsDeleteModalOpen } = useSubscription();
+    const { isAddModalOpen, setIsAddModalOpen, setIsEditModalOpen, setIsDeleteModalOpen, selectedSubscription } = useSubscription();
 
     const [optimisticSubscriptionsData, updateOptimisticSubscriptionsData] = useOptimistic(
         initialData,
@@ -25,11 +26,12 @@ export default function SubscriptionController({ initialData }: { initialData: S
 
     const handleAddSubscription = async (formData: SubscriptionType) => {
         setIsAddModalOpen(false);
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         startTransition(async () => {
             updateOptimisticSubscriptionsData(formData);
 
             ToastPromiseGeneral({
-                promise: addSubscription(formData),
+                promise: addSubscription(formData, userTimeZone),
                 loadingMessage: 'Adding Subscription...',
                 successMessage: 'Subscription Added Successfully',
                 errorMessage: 'Failed to add Subscription',
@@ -39,11 +41,15 @@ export default function SubscriptionController({ initialData }: { initialData: S
 
     const handleUpdateSubscription = async (formData: SubscriptionType) => {
         setIsEditModalOpen(false);
-
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if(!selectedSubscription){
+            ToastGeneralError('No subscription selected for update');
+            return;
+        }
         startTransition(async () => {
             updateOptimisticSubscriptionsData(formData);
             ToastPromiseGeneral({
-                promise: updateSubscription(formData),
+                promise: updateSubscription(formData, userTimeZone, selectedSubscription),
                 loadingMessage: 'Updating Subscription...',
                 successMessage: 'Subscription Updated Successfully',
                 errorMessage: 'Failed to Update Subscription',

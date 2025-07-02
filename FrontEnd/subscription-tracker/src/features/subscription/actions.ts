@@ -3,6 +3,7 @@
 import { SubscriptionType } from "@/features/subscription/types";
 import { revalidatePath } from "next/cache";
 import { getAuthToken } from "@/features/auth/actions";
+import { convertLocalStringDateTimeToUTC } from "@/utils/helper";
 
 export async function fetchSubscriptions() {
     try {
@@ -20,30 +21,6 @@ export async function fetchSubscriptions() {
         });
         const data = await response.json();
         if (response.status === 200) {
-            if (Array.isArray(data)) {
-                data.forEach(subscription => {
-                    if (subscription.reminder_time) {
-                        // Convert UTC to local time for display
-                        const date = new Date(subscription.reminder_time);
-                        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-                        subscription.reminder_time = localDate.toISOString().slice(0, 16);
-                    }
-                    if (subscription.date_of_purchase) {
-                        // Format date for date input type (YYYY-MM-DD)
-                        const date = new Date(subscription.date_of_purchase);
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        subscription.date_of_purchase = `${year}-${month}-${day}`;
-                    }
-                    if (subscription.date_of_expiration) {
-                        // Convert UTC to local time for display
-                        const date = new Date(subscription.date_of_expiration);
-                        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-                        subscription.date_of_expiration = localDate.toISOString().slice(0, 16);
-                    }
-                });
-            }
             return { data, error: null };
         }
         if (response.status === 404 && data.message) {
@@ -59,7 +36,7 @@ export async function fetchSubscriptions() {
     }
 }
 
-export async function addSubscription(formData: SubscriptionType) {
+export async function addSubscription(formData: SubscriptionType, userTimeZone:string) {
     try {
         // Form validation
         if (!formData.name) {
@@ -72,26 +49,36 @@ export async function addSubscription(formData: SubscriptionType) {
         if (formData.seller_info && formData.seller_info.length > 255) {
             return { data: null, error: "The seller info may not be greater than 255 characters." };
         }
-
-        if (formData.date_of_purchase && isNaN(new Date(formData.date_of_purchase).getTime())) {
-            return { data: null, error: "The date of purchase must be a valid date." };
+        if (formData.date_of_purchase) {
+            const dateOfPurchaseUtc = convertLocalStringDateTimeToUTC(formData.date_of_purchase, userTimeZone);
+            if(!dateOfPurchaseUtc || isNaN(dateOfPurchaseUtc.getTime())) {
+                return { data: null, error: "The date of purchase must be a valid date." };
+            }
+            formData.date_of_purchase = dateOfPurchaseUtc.toISOString();
         }
-
-        if (formData.reminder_time && isNaN(new Date(formData.reminder_time).getTime())) {
-            return { data: null, error: "The reminder time must be a valid date with time." };
-        }
-        if (formData.reminder_time && new Date(formData.reminder_time) < new Date()) {
-            return { data: null, error: "The reminder time must be in the future." };
+        if(formData.reminder_time){
+            const reminderTimeUtc = convertLocalStringDateTimeToUTC(formData.reminder_time, userTimeZone);
+            if(!reminderTimeUtc || isNaN(reminderTimeUtc.getTime())) {
+                return { data: null, error: "The reminder time must be a valid date with time." };
+            }
+            if( reminderTimeUtc < new Date()) {
+                return { data: null, error: "The reminder time must be in the future."};
+            }
+            formData.reminder_time = reminderTimeUtc.toISOString();
         }
 
         if (!formData.date_of_expiration) {
             return { data: null, error: "The date of expiration field is required." };
         }
-        if (isNaN(new Date(formData.date_of_expiration).getTime())) {
-            return { data: null, error: "The date of expiration must be a valid date." };
-        }
-        if (formData.date_of_expiration && new Date(formData.date_of_expiration) < new Date()) {
-            return { data: null, error: "The expiration date must be in the future." };
+        else {
+            const dateOfExpirationUtc = convertLocalStringDateTimeToUTC(formData.date_of_expiration, userTimeZone);
+            if (!dateOfExpirationUtc || isNaN(dateOfExpirationUtc.getTime())) {
+                return { data: null, error: "The date of expiration must be a valid date." };
+            }
+            if (dateOfExpirationUtc < new Date()) {
+                return { data: null, error: "The expiration date must be in the future." };
+            }
+            formData.date_of_expiration = dateOfExpirationUtc.toISOString();
         }
 
         if (formData.account_info && formData.account_info.length > 255) {
@@ -117,13 +104,9 @@ export async function addSubscription(formData: SubscriptionType) {
         const formDataToSend = new FormData();
 
         Object.entries(formData).forEach(([key, value]) => {
-            if (value instanceof Date) {
-                formDataToSend.append(key, value.toISOString());
-            } else {
-                formDataToSend.append(key, value.toString());
-            }
+            formDataToSend.append(key, value.toString());
         });
-
+    
         const response = await fetch(`${process.env.BACKEND_URL}/subscription/store`, {
             method: 'POST',
             headers: {
@@ -146,8 +129,9 @@ export async function addSubscription(formData: SubscriptionType) {
         revalidatePath('/dashboard');
     }
 }
-export async function updateSubscription(formData: SubscriptionType) {
+export async function updateSubscription(formData: SubscriptionType, userTimeZone:string, previousData: SubscriptionType) {
     try {
+
         if (formData.name && formData.name.length > 255) {
             return { data: null, error: "The Subscription's Name may not be greater than 255 characters." };
         }
@@ -156,23 +140,41 @@ export async function updateSubscription(formData: SubscriptionType) {
             return { data: null, error: "The seller info may not be greater than 255 characters." };
         }
 
-        if (formData.date_of_purchase && isNaN(new Date(formData.date_of_purchase).getTime())) {
-            return { data: null, error: "The date of purchase must be a valid date." };
+        if (formData.date_of_purchase) {
+            const dateOfPurchaseUtc = convertLocalStringDateTimeToUTC(formData.date_of_purchase, userTimeZone);
+            if(!dateOfPurchaseUtc || isNaN(dateOfPurchaseUtc.getTime())) {
+                return { data: null, error: "The date of purchase must be a valid date." };
+            }
+            formData.date_of_purchase = dateOfPurchaseUtc.toISOString();
         }
 
-        if (formData.reminder_time && isNaN(new Date(formData.reminder_time).getTime())) {
-            return { data: null, error: "The reminder time must be a valid date with time." };
-        }
-        // if (formData.reminder_time && new Date(formData.reminder_time) < new Date()) {
-        //     return { data: null, error: "The reminder time must be in the future." };
-        // }
+        if(formData.reminder_time){
+            const reminderTimeUtc = convertLocalStringDateTimeToUTC(formData.reminder_time, userTimeZone);
+            if(!reminderTimeUtc || isNaN(reminderTimeUtc.getTime())) {
+                return { data: null, error: "The reminder time must be a valid date with time." };
+            }
 
-        if (formData.date_of_expiration && isNaN(new Date(formData.date_of_expiration).getTime())) {
-            return { data: null, error: "The date of expiration must be a valid date." };
+            if( reminderTimeUtc.getTime() !== new Date(previousData.reminder_time as string).getTime() && reminderTimeUtc <= new Date()) {
+                return { data: null, error: "The reminder time must be in the future."};
+            }
+            formData.reminder_time = reminderTimeUtc.toISOString();
         }
-        // if (formData.date_of_expiration && new Date(formData.date_of_expiration) < new Date()) {
-        //     return { data: null, error: "The expiration date must be in the future." };
-        // }
+
+        if (!formData.date_of_expiration) {
+            return { data: null, error: "The date of expiration field is required." };
+        }
+        else {
+            const dateOfExpirationUtc = convertLocalStringDateTimeToUTC(formData.date_of_expiration, userTimeZone);
+            if (!dateOfExpirationUtc || isNaN(dateOfExpirationUtc.getTime())) {
+                return { data: null, error: "The date of expiration must be a valid date." };
+            }
+
+            if (dateOfExpirationUtc.getTime() !== new Date(previousData.date_of_expiration as string).getTime() && dateOfExpirationUtc <= new Date()) {
+                return { data: null, error: "_The expiration date must be in the future." };
+            }
+            formData.date_of_expiration = dateOfExpirationUtc.toISOString();
+        }
+        
         if (formData.account_info && formData.account_info.length > 255) {
             return { data: null, error: "The account info may not be greater than 255 characters." };
         }

@@ -22,7 +22,8 @@ export default function LoginForm({ customClass }: { customClass?: string }) {
 
     const onSubmit = async (data: LoginFormData) => {
         try {
-            const response = await login(data);
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const response = await login(data, userTimeZone);
             if (!response.error) {
                 setIsNavigating(true); // Set navigating state
                 router.replace('/dashboard');

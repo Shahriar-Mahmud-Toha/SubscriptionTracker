@@ -1,4 +1,4 @@
-# Subscription Tracker - Frontend ![version](https://img.shields.io/badge/version-1.0.4-blue)
+# Subscription Tracker - Frontend ![version](https://img.shields.io/badge/version-1.0.5-blue)
 
 A modern, secure, and user-friendly frontend for the [Subscription Tracker API](https://github.com/Shahriar-Mahmud-Toha/SubscriptionTracker/tree/master/Backend/SubscriptionTracker), enabling users to manage their subscriptions, profile, and account with ease. This project is built with **Next.js** (App Router), React, and TypeScript, and is designed to work seamlessly with the robust **Laravel** backend.
 
@@ -79,7 +79,7 @@ Before you get started, make sure your system has the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Shahriar-Mahmud-Toha/SubscriptionTracker/tree/master
+git clone https://github.com/Shahriar-Mahmud-Toha/SubscriptionTracker.git
 cd SubscriptionTracker/FrontEnd/subscription-tracker
 ```
 
@@ -278,12 +278,15 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ---
 
-## 🔒 License & Usage
+## 📝 License
 
 This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
 
 You are free to view, share, and adapt the code for **non-commercial purposes** with proper attribution.  
-Commercial use, redistribution, or republishing is **not allowed** without explicit permission from the author **Md. Shahriar Mahmud** (GitHub: *Shahriar-Mahmud-Toha*).
+**Commercial use, redistribution, or republishing is not allowed** without explicit permission from the author.
+
+For permission requests, please contact via [mdshahriar.me](https://mdshahriar.me)  
+or reach out on GitHub: [Shahriar-Mahmud-Toha](https://github.com/Shahriar-Mahmud-Toha).
 
 ---
 

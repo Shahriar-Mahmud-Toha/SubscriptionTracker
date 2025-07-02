@@ -78,7 +78,7 @@ export const metadata: Metadata = {
         "@type": "Person",
         "name": "Md. Shahriar Mahmud",
         "url": "https://mdshahriar.me/",
-        "email": "shahriar.smt@outlook.com",
+        "email": "contact@mdshahriar.me",
         "jobTitle": "Full Stack Developer",
         "alumniOf": {
           "@type": "CollegeOrUniversity",

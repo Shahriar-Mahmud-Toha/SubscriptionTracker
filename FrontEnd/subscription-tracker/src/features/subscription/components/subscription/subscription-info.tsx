@@ -1,4 +1,5 @@
-import { formatDateTimeToReadable} from "@/utils/helper";
+'use client';
+import { formatStringDateTimeToReadable } from "@/utils/helper";
 import { SubscriptionType } from "@/features/subscription/types";
 import InfoShort from "@/components/data-showcase/info-short";
 import Image from "next/image";
@@ -6,9 +7,17 @@ import { useSubscription } from "@/features/subscription/contexts/subscription-c
 import SubscriptionDetailsModal from "@/features/subscription/components/subscription/subscription-details-modal";
 import SubscriptionEditModal from "@/features/subscription/components/subscription/subscription-edit-modal";
 import SubscriptionDeleteModal from "@/features/subscription/components/subscription/subscription-delete-modal";
+import { useEffect, useState } from "react";
 
 export default function SubscriptionInfo({ data, customClass, handleEdit, handleDelete }: { data: SubscriptionType[], customClass?: string, handleEdit: (subscription: SubscriptionType) => void, handleDelete: (subscription: SubscriptionType) => void }) {
     const { setSelectedSubscription, isDetailsModalOpen, setIsDetailsModalOpen, isEditModalOpen, setIsEditModalOpen, isDeleteModalOpen, setIsDeleteModalOpen, selectedSubscription } = useSubscription();
+    const [isUiLoaded, setIsUiLoaded] = useState(false);
+
+    useEffect(() => {
+        if (data.length > 0 && !isUiLoaded) {
+            setIsUiLoaded(true);
+        }
+    }, [data, isUiLoaded]);
 
     const handleDetailsClick = (subscription: SubscriptionType) => {
         setSelectedSubscription(subscription);
@@ -39,7 +48,6 @@ export default function SubscriptionInfo({ data, customClass, handleEdit, handle
         setIsDeleteModalOpen(false);
         setSelectedSubscription(null);
     };
-
     const selectedSubscriptionData = selectedSubscription ? data.find(item => item.id === selectedSubscription.id) : null;
 
     return (
@@ -58,7 +66,11 @@ export default function SubscriptionInfo({ data, customClass, handleEdit, handle
                             <div>
                                 <InfoShort
                                     text={item.name ?? 'Subscription Name'}
-                                    subText={`Expire Date: ${item.date_of_expiration ? formatDateTimeToReadable(item.date_of_expiration) : 'N/A'}`}
+                                    subText={
+                                        !isUiLoaded
+                                            ? "Loading..."
+                                            : `Expire Date: ${item.date_of_expiration ? formatStringDateTimeToReadable(item.date_of_expiration) : 'N/A'}`
+                                    }
                                 />
                                 <div className="flex items-center gap-2 mt-1 bg-secondary-background border-border rounded-xl px-2 py-1">
                                     <button

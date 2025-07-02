@@ -1,11 +1,11 @@
 'use server';
 
-import { getClientId, getClientIP, getDeviceInfo } from "@/actions";
+import { getClientId, getClientIP, getDeviceInfo, isValidTimezone } from "@/actions";
 import { LoginFormData, ResetPasswordFormData, SignupFormData } from "@/features/auth/types";
 import { isValidEmail, isValidToken } from "@/utils/validator";
 import { cookies } from 'next/headers';
 
-export async function login(formData: LoginFormData) {
+export async function login(formData: LoginFormData, timezone_last_known: string) {
     try {
         if (!formData.email) {
             return { data: null, error: "The email field is required." };
@@ -18,6 +18,9 @@ export async function login(formData: LoginFormData) {
         }
         if (!formData.password) {
             return { data: null, error: "The password field is required." };
+        }
+        if(!timezone_last_known || await isValidTimezone(timezone_last_known) === false) {
+            return { data: null, error: "Valid Timezone could not be fetched. Cannot proceed." };
         }
 
         const [clientId, clientIP, deviceInfo] = await Promise.all([
@@ -35,7 +38,7 @@ export async function login(formData: LoginFormData) {
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({ ...formData, timezone_last_known }),
         });
         const data = await response.json();
         if (response.status === 200 && data.tokens) {
@@ -184,7 +187,7 @@ export async function getAuthToken() {
         return { token: null, error: 'Internal Server Error. Authentication Failed, Please Login.' };
     }
 }
-export async function signup(formData: SignupFormData) {
+export async function signup(formData: SignupFormData, timezone_preferred: string) {
     try {
         if (!formData.email) {
             return { data: null, error: "The email field is required." };
@@ -207,6 +210,9 @@ export async function signup(formData: SignupFormData) {
         if (formData.password !== formData.password_confirmation) {
             return { data: null, error: "Password confirmation does not match." };
         }
+        if(!timezone_preferred || await isValidTimezone(timezone_preferred) === false) {
+            return { data: null, error: "Valid Timezone could not be fetched. Cannot proceed." };
+        }
 
         const [clientId, clientIP, deviceInfo] = await Promise.all([
             getClientId(),
@@ -223,7 +229,7 @@ export async function signup(formData: SignupFormData) {
                 'X-Client-IP': clientIP,
                 'X-Device-Info': deviceInfo,
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify({ ...formData, timezone_preferred }),
         });
 
         const data = await response.json();
@@ -342,8 +348,8 @@ export async function forgotPassword(email: string) {
         if (response.status === 200 && data.message) {
             return { data: data.message, error: null };
         }
-        if (response.status === 400 && data?.message) {
-            return { data: null, error: data.message };
+        if (response.status === 400 && data?.email) {
+            return { data: null, error: data.email };
         }
         if (response.status === 429 && data?.message) {
             return { data: null, error: data.message };

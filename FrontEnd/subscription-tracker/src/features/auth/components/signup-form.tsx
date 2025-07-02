@@ -42,15 +42,21 @@ export default function SignupForm({ customClass }: { customClass?: string }) {
     }, [cooldownTime]);
 
     const onSubmit = async (data: SignupFormData) => {
-        const response = await signup(data);
-        if (!response.error) {
-            document.cookie = `signup_token=; max-age=0; path=/`;
-            setResendAttempts(0);
-            document.cookie = `signup_token=${response.data.token}; max-age=3600; path=/`;
-            ToastGeneralSuccess(response.data.message, 5000);
-            setResendVerificationEmail(true);
-        } else {
-            ToastGeneralError(response.error, 5000);
+        try {
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const response = await signup(data, userTimeZone);
+            if (!response.error) {
+                document.cookie = `signup_token=; max-age=0; path=/`;
+                setResendAttempts(0);
+                document.cookie = `signup_token=${response.data.token}; max-age=3600; path=/`;
+                ToastGeneralSuccess(response.data.message, 5000);
+                setResendVerificationEmail(true);
+            } else {
+                ToastGeneralError(response.error, 5000);
+            }
+        }
+        catch (error) {
+            ToastGeneralError("An unexpected error occurred", 5000);
         }
     };
 
