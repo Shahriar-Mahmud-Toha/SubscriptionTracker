@@ -225,7 +225,7 @@ server {
 **Summary:**  
 - Nginx proxies frontend traffic to the Next.js container (`subs-tracker-frontend:3000`)
 - Nginx serves the backend Laravel API via FPM (`subs-tracker-backend:9000`) on port 8000
-- Host port 80 is mapped to Nginx for easy access at `http://localhost`
+- Host port 3000 is mapped to Nginx for easy access at `http://localhost:3000`
 
 ---
 
@@ -271,7 +271,7 @@ services:
     image: nginx:stable
     container_name: subs-tracker-nginx
     ports:
-      - "80:3000"
+      - "3000:3000"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/custom.conf
     depends_on:
