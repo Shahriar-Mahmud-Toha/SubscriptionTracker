@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-:root {
-  /* Theme Colors */
+/* For dark and white mode both theme setup. */
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
   --regular: #CBC9D5;
@@ -11,6 +11,18 @@
   --custom-violet: #A896F9;
   --red-general: #ff5260;
   --tooltip-background: #27272E;
+} */
+:root {
+  --background: #18171E;
+  --foreground: #ffffff;
+  --regular: #CBC9D5;
+  --regular-muted: #A8A5B3;
+  --secondary-background: #201F26;
+  --secondary-foreground: #18171E;
+  --custom-violet: #A896F9;
+  --red-general: #ff5260;
+  --tooltip-background: #27272E;
+  --muted-foreground: #A8A5B3;
 }
 
 @theme inline {
@@ -36,13 +48,14 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
+/* For dark and white mode both theme setup. */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #18171E;
     --foreground: #ffffff;
     --muted-foreground: #A8A5B3;
   }
-}
+} */
 
 body {
   background: var(--background);
