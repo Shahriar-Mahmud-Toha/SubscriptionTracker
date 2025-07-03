@@ -2,6 +2,7 @@ services:
   subs-tracker-backend:
     image: shahriar001/subscription-tracker-backend
     container_name: subs-tracker-backend
+    restart: unless-stopped
     volumes:
       - backend_data:/var/www/storage
     depends_on:
@@ -39,6 +40,7 @@ services:
   subs-tracker-nginx:
     image: nginx:stable
     container_name: subs-tracker-nginx
+    restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
@@ -52,6 +54,7 @@ services:
   subs-tracker-frontend:
     image: shahriar001/subscription-tracker-frontend
     container_name: subs-tracker-frontend
+    restart: unless-stopped
     depends_on:
       - subs-tracker-backend
     networks:
@@ -67,6 +70,7 @@ services:
   subs-tracker-database:
     image: mysql:8.0.42
     container_name: subs-tracker-database
+    restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
     environment:
@@ -78,6 +82,7 @@ services:
   subs-tracker-redis:
     image: redis:8.0.2
     container_name: subs-tracker-redis
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
