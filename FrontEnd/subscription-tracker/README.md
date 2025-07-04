@@ -1,4 +1,4 @@
-# Subscription Tracker - Frontend ![version](https://img.shields.io/badge/version-1.0.7-blue)
+# Subscription Tracker - Frontend ![version](https://img.shields.io/badge/version-1.0.8-blue)
 
 A modern, secure, and user-friendly frontend for the [Subscription Tracker API](https://github.com/Shahriar-Mahmud-Toha/SubscriptionTracker/tree/master/Backend/SubscriptionTracker), enabling users to manage their subscriptions, profile, and account with ease. This project is built with **Next.js** (App Router), React, and TypeScript, and is designed to work seamlessly with the robust **Laravel** backend.
 
