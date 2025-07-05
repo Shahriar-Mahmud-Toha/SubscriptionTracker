@@ -1,14 +1,13 @@
 services:
   subs-tracker-backend:
     build:
-      context: ./Backend/SubscriptionTracker
+      context: .
       dockerfile: DockerFile
-      network: app-network
     image: subs-tracker-backend
     container_name: subs-tracker-backend
     volumes:
-      - ./Backend/SubscriptionTracker:/var/www
-      - ./Backend/SubscriptionTracker/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     depends_on:
       - subs-tracker-database
       - subs-tracker-redis
@@ -45,39 +44,20 @@ services:
     image: nginx:stable
     container_name: subs-tracker-nginx
     ports:
-      - "80:3000"
+      - "80:8000"
     volumes:
-      - ./Backend/SubscriptionTracker:/var/www
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/custom.conf
-    depends_on:
-      - subs-tracker-backend
-      - subs-tracker-frontend
-    networks:
-      - app-network
-
-  subs-tracker-frontend:
-    build:
-      context: ./FrontEnd/subscription-tracker
-      dockerfile: DockerFile
-      network: app-network
-      args:
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-        BACKEND_URL: ${BACKEND_URL}
-    image: subs-tracker-frontend
-    container_name: subs-tracker-frontend
+      - .:/var/www
+      - ./docker/nginx/nginx-ci-cd-stage.conf:/etc/nginx/conf.d/custom.conf
     depends_on:
       - subs-tracker-backend
     networks:
       - app-network
-    environment:
-      NODE_ENV: "${NODE_ENV}"
-      COOKIE_SECURE: "${COOKIE_SECURE}"
-      BACKEND_URL: "${BACKEND_URL}"
-      SERVER_SECRET: "${SERVER_SECRET}"
-      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL}"
-      IP_LOOKUP: "${IP_LOOKUP}"
-    # ports:
-    #   - "3000:3000"
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost/api/up"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
 
   subs-tracker-database:
     image: mysql:8.0.42
@@ -89,8 +69,8 @@ services:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
     networks:
       - app-network
-    ports:
-      - "5554:${DB_PORT}"
+    # ports:
+    #   - "5554:${DB_PORT}"
 
   subs-tracker-redis:
     image: redis:8.0.2

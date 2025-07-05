@@ -1,5 +1,5 @@
+.vscode
 .env
 .env.*
 !.env.example
-
 SubscriptionTracker-FullStack-workspace.code-workspace

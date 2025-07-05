@@ -3,7 +3,10 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Response;
 
 Route::group(['middleware' => 'server-verification'], function () {
 
@@ -42,4 +45,10 @@ Route::group(['middleware' => 'server-verification'], function () {
         Route::patch('update/email', [AuthController::class, 'updateEmail']);
         Route::patch('update/password', [AuthController::class, 'updatePassword']);
     });
+});
+
+// Health check route 
+Route::get('up', function () {
+    Event::dispatch(new DiagnosingHealth);
+    return Response::json(['status' => 'healthy'], 200);
 });
