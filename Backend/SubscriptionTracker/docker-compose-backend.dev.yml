@@ -5,9 +5,6 @@ services:
       dockerfile: DockerFile
     image: subs-tracker-backend
     container_name: subs-tracker-backend
-    volumes:
-      - .:/var/www
-      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     depends_on:
       - subs-tracker-database
       - subs-tracker-redis
@@ -46,7 +43,6 @@ services:
     ports:
       - "80:8000"
     volumes:
-      - .:/var/www
       - ./docker/nginx/nginx-ci-cd-stage.conf:/etc/nginx/conf.d/custom.conf
     depends_on:
       - subs-tracker-backend
