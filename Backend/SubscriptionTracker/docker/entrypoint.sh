@@ -29,9 +29,9 @@ else
 fi
 
 # Cache and optimization
-php artisan optimize:clear
-php artisan config:cache
-php artisan optimize
+php artisan optimize:clear || echo "optimize:clear failed: $?"
+php artisan config:cache || echo "config:cache failed: $?"
+php artisan optimize || echo "optimize failed: $?"
 
 # Start queue workers in background
 php artisan queue:work --queue=high,mid,default,low --tries=3 --sleep=3 &
