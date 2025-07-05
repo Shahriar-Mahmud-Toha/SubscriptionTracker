@@ -32,9 +32,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: List files for debugging
-        run: ls -alR
-        
       # 4. Build all images with Docker Compose (using generated .env)
       - name: Build all images with Docker Compose
         run: docker compose build
