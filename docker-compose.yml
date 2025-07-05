@@ -102,11 +102,8 @@ services:
 
 volumes:
   db_data:
-    external: true
   redis_data:
-    external: true
 
 networks:
   app-network:
     driver: bridge
-    external: true

@@ -29,42 +29,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Ensure external Docker network and volumes exist
-        run: |
-          docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
-          docker volume inspect db_data >/dev/null 2>&1 || docker volume create db_data
-          docker volume inspect redis_data >/dev/null 2>&1 || docker volume create redis_data
-
-      # Step 1: Build and start backend stack only
-      - name: Build and start backend stack
-        env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker compose -f Backend/SubscriptionTracker/docker-compose-backend.dev.yml --env-file .env up --build -d
-
-      # Step 2: Wait for backend health endpoint
-      - name: Wait for backend health endpoint
-        run: |
-          for i in {1..60}; do
-            echo "Checking backend health: Attempt $i"
-            if curl -sSf http://localhost/api/up >/dev/null; then
-              echo "Backend healthy!"
-              exit 0
-            fi
-            echo "Not healthy yet. Sleeping 5s."
-            docker logs subs-tracker-nginx
-            docker logs subs-tracker-backend
-            sleep 5
-          done
-          echo "Backend failed to become healthy after 60 tries."
-          exit 1
-
-      # Step 3: Build all images with Docker Compose + BuildKit (frontend will build, backend is cached)
-      - name: Build all images with Docker Compose + BuildKit
-        env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker compose --env-file .env build
+      - name: Build all images with Docker Compose
+        run: docker compose build
 
       - name: Tag backend and frontend images
         run: |
@@ -103,3 +69,25 @@ jobs:
             docker compose -f docker-compose.production.yml pull && \
             docker compose -f docker-compose.production.yml up -d
           '
+
+  build-and-push-backend-standalone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend standalone image
+        run: |
+          cd Backend/SubscriptionTracker
+          docker build -f DockerFile.standalone -t shahriar001/subscription-tracker-backend-standalone:latest .
+
+      - name: Push backend standalone image
+        run: |
+          docker push shahriar001/subscription-tracker-backend-standalone:latest
