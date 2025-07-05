@@ -52,6 +52,8 @@ jobs:
               exit 0
             fi
             echo "Not healthy yet. Sleeping 5s."
+            docker logs subs-tracker-nginx
+            docker logs subs-tracker-backend
             sleep 5
           done
           echo "Backend failed to become healthy after 60 tries."
