@@ -32,7 +32,7 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
 
     return (
         <div className={`flex gap-10 ${customClasses}`}>
-            <Link href="/dashboard" className="group">
+            <Link href="/dashboard" className="group relative">
                 <Image
                     src={isDashboard ? "/assets/icons/home-active.svg" : "/assets/icons/home-regular.svg"}
                     className={`w-6 h-6 block group-hover:scale-130 transition-all duration-300 ${!isDashboard && "group-hover:hidden"}`}
@@ -49,8 +49,11 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
                         alt="Dashboard"
                     />
                 )}
+                <p className="absolute top-8 left-1/2 -translate-x-1/2 bg-tooltip-background text-foreground text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                    Dashboard
+                </p>
             </Link>
-            <Link href="/profile" className="group">
+            <Link href="/profile" className="group relative">
                 <Image
                     src={isProfile ? "/assets/icons/profile-active.svg" : "/assets/icons/profile-regular.svg"}
                     className={`w-6 h-6 block group-hover:scale-130 transition-all duration-300 ${!isProfile && "group-hover:hidden"}`}
@@ -67,6 +70,9 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
                         alt="Profile"
                     />
                 )}
+                <p className="absolute top-8 left-1/2 -translate-x-1/2 bg-tooltip-background text-foreground text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                    Profile
+                </p>
             </Link>
             <button
                 onClick={handleLogout}
@@ -87,6 +93,9 @@ export default function HeaderAction({ customClasses }: { customClasses: string 
                     height={24}
                     alt="Logout"
                 />
+                <p className="absolute top-8 left-1/2 -translate-x-1/2 bg-tooltip-background text-foreground text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                    Logout
+                </p>
             </button>
         </div>
     );

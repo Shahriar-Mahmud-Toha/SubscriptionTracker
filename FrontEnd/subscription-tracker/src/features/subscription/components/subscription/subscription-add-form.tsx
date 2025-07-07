@@ -38,6 +38,7 @@ export default function SubscriptionAddForm({
                             message: "The Subscription's Name may not be greater than 255 characters.",
                         },
                     }}
+                    isMandatory={true}
                 />
 
                 <FormInput<SubscriptionType>
@@ -94,6 +95,7 @@ export default function SubscriptionAddForm({
                             isFutureDate: (value) => !value || new Date(value as string) > new Date() || "The expiration date must be in the future."
                         }
                     }}
+                    isMandatory={true}
                 />
                 <FormInput<SubscriptionType>
                     id="account_info"

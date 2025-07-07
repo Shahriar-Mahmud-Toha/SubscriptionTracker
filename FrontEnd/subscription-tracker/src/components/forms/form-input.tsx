@@ -16,6 +16,7 @@ interface FormInputProps<TFormValues extends FieldValues> {
     validation?: RegisterOptions<TFormValues>;
     customClass?: string;
     options?: Option[];
+    isMandatory?: boolean;
 }
 
 export default function FormInput<TFormValues extends FieldValues>({
@@ -28,12 +29,13 @@ export default function FormInput<TFormValues extends FieldValues>({
     errors,
     validation,
     customClass = '',
-    options
+    options,
+    isMandatory = false,
 }: FormInputProps<TFormValues>) {
     return (
         <div className={customClass}>
             <label htmlFor={id} className="block text-sm font-medium mb-1">
-                {label}
+                {label} {isMandatory ? <span className="text-red-general">*</span> : null}
             </label>
             {type === 'select' ? (
                 <select

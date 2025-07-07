@@ -39,6 +39,7 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
                             message: "The Subscription Name may not be greater than 255 characters.",
                         },
                     }}
+                    isMandatory={true}
                 />
 
                 <FormInput<SubscriptionType>
@@ -105,6 +106,7 @@ export default function SubscriptionEditForm({ subscription, onEdit, customClass
                             }
                         }
                     }}
+                    isMandatory={true}
                 />
                 <FormInput<SubscriptionType>
                     id="account_info"
