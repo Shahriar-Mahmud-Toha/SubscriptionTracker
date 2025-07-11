@@ -6,8 +6,8 @@ class TokenConstants
 {
     // Token validity periods (in minutes)
     public const ACCESS_TOKEN_VALIDITY = 15;
-    public const REFRESH_TOKEN_VALIDITY = 60;
-    
+    public const REFRESH_TOKEN_VALIDITY = 60 * 24 * 30; // 30 day
+
     // Safety buffer (in seconds)
     public const TOKEN_EXPIRE_BUFFER = 10;
 

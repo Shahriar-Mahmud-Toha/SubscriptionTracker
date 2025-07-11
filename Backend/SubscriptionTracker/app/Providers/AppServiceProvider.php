@@ -93,5 +93,11 @@ class AppServiceProvider extends ServiceProvider
         $schedule->call(function () {
             DB::table('password_resets')->where('expires_at', '<', now())->delete();
         })->hourly();
+        $schedule->call(function () {
+            DB::table('authentications')
+                ->whereNull('email_verified_at')
+                ->where('created_at', '<=', now()->subMinutes(5))
+                ->delete();
+        })->everyFiveMinutes();
     }
 }
