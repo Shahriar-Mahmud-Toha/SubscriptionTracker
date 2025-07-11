@@ -9,7 +9,7 @@ import { resendVerificationLink, signup } from '@/features/auth/actions';
 import ToastGeneralError from '@/components/toasts/toast-general-error';
 import ToastGeneralSuccess from '@/components/toasts/toast-general-success';
 
-const RESEND_COOLDOWN_TIME = 5; // in Seconds
+const RESEND_COOLDOWN_TIME = 60; // in Seconds
 
 export default function SignupForm({ customClass }: { customClass?: string }) {
     const {
@@ -63,7 +63,7 @@ export default function SignupForm({ customClass }: { customClass?: string }) {
     const handleResendVerificationEmail = async () => {
         if (cooldownTime > 0 || isResending) return;
 
-        const signupToken = document.cookie.split('signup_token=')[1];
+        const signupToken = document.cookie.split('; ').find(row => row.startsWith('signup_token='))?.split('=')[1] ?? '';
         if (!signupToken) {
             ToastGeneralError("No signup information found. Signup first!");
             return;

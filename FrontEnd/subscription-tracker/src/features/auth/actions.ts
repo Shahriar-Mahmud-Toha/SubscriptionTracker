@@ -250,7 +250,7 @@ export async function resendVerificationLink(token: string) {
         if (!token) {
             return { data: null, error: "Token is required." };
         }
-        if (!/^[a-zA-Z0-9.-]+$/.test(token)) {
+        if (!/^[A-Za-z0-9-_\.]+$/.test(token)) {
             return { data: null, error: "Invalid token format." };
         }
 
